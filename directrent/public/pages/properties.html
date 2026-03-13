@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Browse Properties — DirectRent</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>* { font-family: 'Inter', sans-serif; } .card-hover{transition:all 0.3s;} .card-hover:hover{transform:translateY(-4px);box-shadow:0 20px 50px rgba(0,0,0,0.12);} .prop-img-wrap{overflow:hidden;} .prop-img{transition:transform 0.4s;} .prop-img-wrap:hover .prop-img{transform:scale(1.06);}</style>
+</head>
+<body class="bg-gray-50">
+  <nav class="bg-green-800 sticky top-0 z-50 shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 lg:px-8 py-3 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-3"><div class="w-9 h-9 bg-green-500 rounded-xl flex items-center justify-center"><i class="fa-solid fa-house text-white"></i></div><span class="text-white font-black text-lg">Direct<span class="text-green-300">Rent</span></span></a>
+      <div class="hidden md:flex items-center gap-1">
+        <a href="/pages/properties.html" class="text-white bg-white/15 px-3 py-2 rounded-lg text-sm font-medium">Properties</a>
+        <a href="/pages/lawyers.html" class="text-gray-200 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg text-sm font-medium transition-all">Lawyers</a>
+        <a href="/pages/agents.html" class="text-gray-200 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg text-sm font-medium transition-all">Agents</a>
+        <a href="/pages/blog.html" class="text-gray-200 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg text-sm font-medium transition-all">Blog</a>
+        <a href="/pages/support.html" class="text-gray-200 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg text-sm font-medium transition-all">Support</a>
+      </div>
+      <div id="nav-auth" class="flex items-center gap-2">
+        <a href="/pages/login.html" class="text-gray-200 border border-white/30 px-4 py-2 rounded-lg text-sm font-medium hover:bg-white/10 transition-all">Sign In</a>
+        <a href="/pages/register.html" class="bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-green-400 transition-all">Get Started</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="bg-gradient-to-r from-green-900 to-green-700 py-12 px-4">
+    <div class="max-w-5xl mx-auto text-center">
+      <h1 class="text-3xl lg:text-4xl font-black text-white mb-2">Find Your Perfect Property</h1>
+      <p class="text-green-200 mb-7 text-base">Thousands of verified listings across Nigeria</p>
+      <div class="bg-white rounded-2xl p-4 shadow-2xl text-left">
+        <div class="flex flex-col md:flex-row gap-3">
+          <div class="flex-1 relative"><i class="fa-solid fa-location-dot absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i><input type="text" id="s-city" placeholder="City or neighborhood..." class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 font-medium"></div>
+          <div class="relative"><i class="fa-solid fa-house absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i><select id="s-type" class="pl-10 pr-8 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 bg-white min-w-40 font-medium"><option value="">All Types</option><option value="long-term">Long-term</option><option value="shortlet">Shortlet</option></select></div>
+          <div class="relative"><i class="fa-solid fa-naira-sign absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i><input type="number" id="s-max" placeholder="Max price..." class="pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 w-36 font-medium"></div>
+          <button onclick="doSearch()" class="bg-green-600 hover:bg-green-500 text-white px-6 py-3 rounded-xl font-bold text-sm transition-all flex items-center gap-2 whitespace-nowrap shadow-md"><i class="fa-solid fa-search"></i> Search</button>
+        </div>
+        <div class="flex gap-2 mt-3 flex-wrap">
+          <span class="text-xs text-gray-400 pt-1">Popular:</span>
+          <button onclick="quickFilter('Lagos')" class="text-xs bg-gray-100 hover:bg-green-100 hover:text-green-700 px-3 py-1.5 rounded-full transition-all font-medium">Lagos</button>
+          <button onclick="quickFilter('Abuja')" class="text-xs bg-gray-100 hover:bg-green-100 hover:text-green-700 px-3 py-1.5 rounded-full transition-all font-medium">Abuja</button>
+          <button onclick="quickFilter('Port Harcourt')" class="text-xs bg-gray-100 hover:bg-green-100 hover:text-green-700 px-3 py-1.5 rounded-full transition-all font-medium">Port Harcourt</button>
+          <button onclick="quickFilter('Lekki')" class="text-xs bg-gray-100 hover:bg-green-100 hover:text-green-700 px-3 py-1.5 rounded-full transition-all font-medium">Lekki</button>
+          <button onclick="quickFilter('Enugu')" class="text-xs bg-gray-100 hover:bg-green-100 hover:text-green-700 px-3 py-1.5 rounded-full transition-all font-medium">Enugu</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-4 lg:px-8 py-8">
+    <div class="flex flex-col lg:flex-row gap-8">
+      <aside class="w-full lg:w-64 flex-shrink-0">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sticky top-20">
+          <h3 class="font-black text-gray-800 mb-5 flex items-center gap-2"><i class="fa-solid fa-sliders text-green-500"></i> Filters</h3>
+          <div class="space-y-4">
+            <div><label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">Type</label><select id="f-type" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-green-500"><option value="">All</option><option value="long-term">Long-term</option><option value="shortlet">Shortlet</option></select></div>
+            <div><label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">Location</label><input type="text" id="f-city" placeholder="City or state..." class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-green-500"></div>
+            <div><label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">Max Budget (₦)</label><input type="number" id="f-max" placeholder="e.g. 2000000" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-green-500"></div>
+            <div><label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">Bedrooms</label><select id="f-beds" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-green-500"><option value="">Any</option><option value="1">1+</option><option value="2">2+</option><option value="3">3+</option><option value="4">4+</option></select></div>
+          </div>
+          <button onclick="applyFilters()" class="w-full bg-green-600 text-white py-3 rounded-xl font-bold text-sm hover:bg-green-500 transition-all mt-5 flex items-center justify-center gap-2"><i class="fa-solid fa-filter"></i> Apply Filters</button>
+          <button onclick="clearFilters()" class="w-full mt-2 text-gray-400 hover:text-gray-600 py-2 text-xs transition-all">Reset filters</button>
+        </div>
+      </aside>
+
+      <div class="flex-1">
+        <div class="flex items-center justify-between mb-6">
+          <div><h2 class="text-xl font-black text-gray-800" id="results-title">All Properties</h2><p class="text-gray-500 text-sm" id="results-count">Loading...</p></div>
+          <select id="sort-by" onchange="applyFilters()" class="border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none bg-white font-medium">
+            <option value="">Newest First</option>
+            <option value="price_asc">Price ↑</option>
+            <option value="price_desc">Price ↓</option>
+          </select>
+        </div>
+        <div id="properties-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+          <div class="bg-white rounded-2xl overflow-hidden animate-pulse border border-gray-100"><div class="h-48 bg-gray-200"></div><div class="p-4 space-y-2"><div class="h-4 bg-gray-200 rounded w-3/4"></div><div class="h-3 bg-gray-200 rounded w-1/2"></div><div class="h-5 bg-gray-200 rounded w-1/3 mt-3"></div></div></div>
+          <div class="bg-white rounded-2xl overflow-hidden animate-pulse border border-gray-100"><div class="h-48 bg-gray-200"></div><div class="p-4 space-y-2"><div class="h-4 bg-gray-200 rounded w-3/4"></div><div class="h-3 bg-gray-200 rounded w-1/2"></div><div class="h-5 bg-gray-200 rounded w-1/3 mt-3"></div></div></div>
+          <div class="bg-white rounded-2xl overflow-hidden animate-pulse border border-gray-100"><div class="h-48 bg-gray-200"></div><div class="p-4 space-y-2"><div class="h-4 bg-gray-200 rounded w-3/4"></div><div class="h-3 bg-gray-200 rounded w-1/2"></div><div class="h-5 bg-gray-200 rounded w-1/3 mt-3"></div></div></div>
+        </div>
+        <div class="mt-8 flex justify-center gap-2" id="pagination"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div id="prop-modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+      <div class="relative"><img id="modal-img" src="" alt="" class="w-full h-64 object-cover rounded-t-3xl"><button onclick="closeModal()" class="absolute top-4 right-4 w-10 h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center text-gray-600 hover:bg-white shadow-lg font-bold text-xl">&times;</button></div>
+      <div class="p-6 lg:p-8">
+        <div class="flex items-start justify-between mb-2"><h2 id="modal-title" class="text-2xl font-black text-gray-800 flex-1 pr-4"></h2><span id="modal-type" class="bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full font-bold whitespace-nowrap mt-1 capitalize"></span></div>
+        <p id="modal-location" class="text-gray-500 text-sm flex items-center gap-1.5 mb-4"></p>
+        <div class="flex gap-3 mb-5" id="modal-features"></div>
+        <div class="bg-gray-50 rounded-xl p-4 mb-5"><p id="modal-desc" class="text-gray-600 text-sm leading-relaxed"></p></div>
+        <div class="flex items-center justify-between py-4 border-t border-gray-100 mb-4">
+          <div><div id="modal-price" class="text-3xl font-black text-green-600"></div><div class="text-xs text-gray-400 mt-0.5">per year</div></div>
+          <div class="text-right"><div class="text-sm font-bold text-gray-700" id="modal-landlord"></div><div class="text-xs text-gray-400">Listed by</div></div>
+        </div>
+        <button id="inspect-btn" onclick="requestInspection()" class="w-full bg-green-600 hover:bg-green-500 text-white py-4 rounded-xl font-black transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-green-500/30"><i class="fa-solid fa-eye"></i> Request Inspection</button>
+        <p class="text-center text-xs text-gray-400 mt-2" id="modal-note"></p>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script>
+    const propImages = ['https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&q=80','https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=600&q=80','https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=600&q=80','https://images.unsplash.com/photo-1575517111839-3a3843ee7f5d?w=600&q=80','https://images.unsplash.com/photo-1564013434775-f71db0030976?w=600&q=80','https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=600&q=80','https://images.unsplash.com/photo-1613977257363-707ba9348227?w=600&q=80','https://images.unsplash.com/photo-1523217582562-09d05606c584?w=600&q=80','https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=600&q=80','https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?w=600&q=80'];
+    const user = getUser();
+    if (user) document.getElementById('nav-auth').innerHTML = `<a href="${getDashboardLink(user.role)}" class="text-gray-200 hover:text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-white/10">${user.name.split(' ')[0]}</a><button onclick="logout()" class="bg-red-500/20 text-red-300 px-4 py-2 rounded-lg text-sm border border-red-500/30">Logout</button>`;
+    let allProperties=[], currentProp=null, page=1;
+    const PER_PAGE=9;
+    const urlP=new URLSearchParams(window.location.search);
+    if(urlP.get('city')){document.getElementById('s-city').value=urlP.get('city');document.getElementById('f-city').value=urlP.get('city');}
+    if(urlP.get('type')){document.getElementById('s-type').value=urlP.get('type');document.getElementById('f-type').value=urlP.get('type');}
+    if(urlP.get('max_price')){document.getElementById('s-max').value=urlP.get('max_price');document.getElementById('f-max').value=urlP.get('max_price');}
+    function doSearch(){document.getElementById('f-city').value=document.getElementById('s-city').value;document.getElementById('f-type').value=document.getElementById('s-type').value;document.getElementById('f-max').value=document.getElementById('s-max').value;page=1;loadProps();}
+    function applyFilters(){page=1;loadProps();}
+    function clearFilters(){['f-type','f-city','f-max','f-beds','s-city','s-type','s-max'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});page=1;loadProps();}
+    function quickFilter(city){document.getElementById('s-city').value=city;document.getElementById('f-city').value=city;doSearch();}
+    async function loadProps(){
+      const grid=document.getElementById('properties-grid');
+      grid.innerHTML='<div class="col-span-3 text-center py-10"><div class="animate-spin inline-block w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full"></div><p class="text-gray-400 text-sm mt-3">Loading properties...</p></div>';
+      const params=new URLSearchParams();
+      const city=document.getElementById('f-city').value,type=document.getElementById('f-type').value,max=document.getElementById('f-max').value,beds=document.getElementById('f-beds').value,sort=document.getElementById('sort-by').value;
+      if(city)params.append('city',city);if(type)params.append('type',type);if(max)params.append('max_price',max);if(beds)params.append('bedrooms',beds);if(sort)params.append('sort',sort);
+      try{
+        const data=await api.get(`/properties?${params.toString()}`);
+        allProperties=data.properties||[];const total=allProperties.length;
+        document.getElementById('results-title').textContent=city?`Properties in ${city}`:'All Properties';
+        document.getElementById('results-count').textContent=`${total} propert${total!==1?'ies':'y'} found`;
+        renderPage(page);renderPagination(total);
+      }catch(err){grid.innerHTML=`<div class="col-span-3 text-center py-8 text-red-500"><i class="fa-solid fa-circle-exclamation mr-2"></i>${err.message}</div>`;}
+    }
+    function renderPage(p){
+      const grid=document.getElementById('properties-grid');
+      const start=(p-1)*PER_PAGE;const slice=allProperties.slice(start,start+PER_PAGE);
+      if(!slice.length){grid.innerHTML=`<div class="col-span-3 text-center py-16"><div class="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4"><i class="fa-solid fa-house text-gray-300 text-2xl"></i></div><p class="text-gray-600 font-bold text-lg">No properties found</p><p class="text-gray-400 text-sm mt-1">Try adjusting your filters</p></div>`;return;}
+      grid.innerHTML=slice.map((prop,i)=>{
+        const imgIdx=(start+i)%propImages.length;const loc=[prop.city,prop.state].filter(Boolean).join(', ')||prop.address;
+        return `<div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 card-hover cursor-pointer" onclick="openModal(${prop.id},${imgIdx})">
+          <div class="relative prop-img-wrap h-48"><img src="${propImages[imgIdx]}" alt="${prop.title}" class="prop-img w-full h-full object-cover" loading="lazy">
+          ${prop.ad_placement?'<div class="absolute top-3 left-3 bg-yellow-400 text-yellow-900 text-xs px-2 py-1 rounded-full font-bold"><i class="fa-solid fa-star text-xs mr-1"></i>Featured</div>':''}
+          <div class="absolute top-3 right-3 bg-white/95 text-green-700 text-xs px-2 py-1 rounded-full font-bold capitalize">${prop.type.replace('-',' ')}</div></div>
+          <div class="p-4">
+            <h3 class="font-bold text-gray-800 text-sm mb-1 truncate">${prop.title}</h3>
+            <p class="text-gray-400 text-xs flex items-center gap-1 mb-3"><i class="fa-solid fa-location-dot text-green-500 text-xs"></i>${loc}</p>
+            <div class="flex gap-3 text-xs text-gray-500 mb-3">${prop.bedrooms?`<span><i class="fa-solid fa-bed text-green-400 mr-0.5"></i>${prop.bedrooms}bd</span>`:''} ${prop.bathrooms?`<span><i class="fa-solid fa-bath text-green-400 mr-0.5"></i>${prop.bathrooms}ba</span>`:''}</div>
+            <div class="flex items-center justify-between pt-3 border-t border-gray-100"><div><span class="text-lg font-black text-green-600">₦${parseFloat(prop.price).toLocaleString()}</span><span class="text-xs text-gray-400">/yr</span></div><span class="bg-green-50 text-green-700 text-xs px-3 py-1.5 rounded-lg font-bold">View →</span></div>
+          </div></div>`;
+      }).join('');
+    }
+    function renderPagination(total){const pages=Math.ceil(total/PER_PAGE);const pag=document.getElementById('pagination');if(pages<=1){pag.innerHTML='';return;}pag.innerHTML=Array.from({length:pages},(_,i)=>i+1).map(i=>`<button onclick="goPage(${i})" class="w-10 h-10 rounded-xl text-sm font-bold transition-all ${i===page?'bg-green-600 text-white shadow-md':'bg-white text-gray-600 border border-gray-200 hover:border-green-400'}">${i}</button>`).join('');}
+    function goPage(p){page=p;renderPage(p);renderPagination(allProperties.length);window.scrollTo({top:400,behavior:'smooth'});}
+    function openModal(propId,imgIdx){
+      const prop=allProperties.find(p=>p.id===propId);if(!prop)return;currentProp=prop;
+      document.getElementById('modal-img').src=propImages[imgIdx];
+      document.getElementById('modal-title').textContent=prop.title;
+      document.getElementById('modal-type').textContent=prop.type.replace('-',' ');
+      document.getElementById('modal-location').innerHTML=`<i class="fa-solid fa-location-dot text-green-500"></i>${[prop.city,prop.state,prop.address].filter(Boolean).join(', ')}`;
+      document.getElementById('modal-desc').textContent=prop.description||'No additional description provided.';
+      document.getElementById('modal-price').textContent=`₦${parseFloat(prop.price).toLocaleString()}`;
+      document.getElementById('modal-landlord').textContent=prop.landlord_name;
+      document.getElementById('modal-features').innerHTML=[prop.bedrooms?`<span class="flex items-center gap-1.5 bg-green-50 px-3 py-2 rounded-xl text-sm text-gray-700"><i class="fa-solid fa-bed text-green-500"></i>${prop.bedrooms} Beds</span>`:'',prop.bathrooms?`<span class="flex items-center gap-1.5 bg-green-50 px-3 py-2 rounded-xl text-sm text-gray-700"><i class="fa-solid fa-bath text-green-500"></i>${prop.bathrooms} Baths</span>`:'']. join('');
+      document.getElementById('modal-note').textContent=user?(user.is_verified?'✓ Your Verified Badge qualifies you for a free inspection!':'Inspection fee: ₦5,000'):'Sign in to request an inspection';
+      document.getElementById('prop-modal').classList.remove('hidden');document.body.style.overflow='hidden';
+    }
+    function closeModal(){document.getElementById('prop-modal').classList.add('hidden');document.body.style.overflow='';}
+    async function requestInspection(){
+      if(!user){window.location.href='/pages/login.html';return;}
+      const btn=document.getElementById('inspect-btn');btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Processing...';btn.disabled=true;
+      try{const data=await api.post(`/inspections/${currentProp.id}/request`);showToast(data.message,'success');closeModal();}
+      catch(err){showToast(err.message,'error');}
+      btn.innerHTML='<i class="fa-solid fa-eye"></i> Request Inspection';btn.disabled=false;
+    }
+    function showToast(msg,type='success'){const t=document.createElement('div');t.className=`fixed top-4 right-4 z-[100] px-6 py-3 rounded-xl text-white font-medium shadow-2xl ${type==='success'?'bg-green-600':'bg-red-600'} flex items-center gap-2`;t.innerHTML=`<i class="fa-solid fa-${type==='success'?'check':'exclamation'}-circle"></i>${msg}`;document.body.appendChild(t);setTimeout(()=>t.remove(),4000);}
+    document.getElementById('s-city').addEventListener('keypress',e=>{if(e.key==='Enter')doSearch();});
+    document.getElementById('prop-modal').addEventListener('click',e=>{if(e.target===document.getElementById('prop-modal'))closeModal();});
+    loadProps();
+  </script>
+</body>
+</html>

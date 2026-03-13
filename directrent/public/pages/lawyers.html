@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Find a Lawyer — DirectRent</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>* { font-family: 'Inter', sans-serif; } .card-hover { transition: all 0.3s; } .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 50px rgba(0,0,0,0.12); }</style>
+</head>
+<body class="bg-gray-50">
+  <!-- Navbar -->
+  <nav class="bg-green-800 sticky top-0 z-50 shadow-lg" style="backdrop-filter: blur(20px);">
+    <div class="max-w-7xl mx-auto px-4 lg:px-8 py-3 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-3">
+        <div class="w-9 h-9 bg-green-500 rounded-xl flex items-center justify-center"><i class="fa-solid fa-house text-white"></i></div>
+        <span class="text-white font-black text-lg">Direct<span class="text-green-300">Rent</span></span>
+      </a>
+      <div class="hidden md:flex items-center gap-1">
+        <a href="/pages/properties.html" class="text-gray-200 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg text-sm font-medium transition-all">Properties</a>
+        <a href="/pages/lawyers.html" class="text-white bg-white/15 px-3 py-2 rounded-lg text-sm font-medium">Lawyers</a>
+        <a href="/pages/agents.html" class="text-gray-200 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg text-sm font-medium transition-all">Agents</a>
+        <a href="/pages/blog.html" class="text-gray-200 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg text-sm font-medium transition-all">Blog</a>
+        <a href="/pages/support.html" class="text-gray-200 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg text-sm font-medium transition-all">Support</a>
+      </div>
+      <div id="nav-auth" class="flex items-center gap-2">
+        <a href="/pages/login.html" class="text-gray-200 border border-white/30 px-4 py-2 rounded-lg text-sm font-medium hover:bg-white/10 transition-all">Sign In</a>
+        <a href="/pages/register.html" class="bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-green-400 transition-all">Get Started</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <div class="bg-gradient-to-br from-green-900 via-green-800 to-green-700 py-16 px-4">
+    <div class="max-w-4xl mx-auto text-center">
+      <div class="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-white/20">
+        <i class="fa-solid fa-scale-balanced text-white text-2xl"></i>
+      </div>
+      <h1 class="text-4xl font-black text-white mb-3">Find a Verified Lawyer</h1>
+      <p class="text-green-200 text-lg mb-8 max-w-2xl mx-auto">Connect with verified property lawyers near you for tenancy agreements, dispute resolution, and legal advice.</p>
+      <div class="max-w-lg mx-auto relative">
+        <i class="fa-solid fa-location-dot absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+        <input type="text" id="location-input" placeholder="Search by city or location..." class="w-full pl-11 pr-32 py-4 rounded-xl text-gray-800 font-medium focus:outline-none focus:ring-2 focus:ring-green-400">
+        <button onclick="searchLawyers()" class="absolute right-2 top-1/2 -translate-y-1/2 bg-green-600 text-white px-5 py-2.5 rounded-lg text-sm font-bold hover:bg-green-500 transition-all">Search</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="max-w-7xl mx-auto px-4 lg:px-8 py-12">
+    <!-- Stats -->
+    <div class="grid grid-cols-3 gap-4 mb-10">
+      <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 text-center">
+        <div class="text-3xl font-black text-green-600 mb-1">500+</div>
+        <div class="text-gray-500 text-sm">Verified Lawyers</div>
+      </div>
+      <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 text-center">
+        <div class="text-3xl font-black text-blue-600 mb-1">36</div>
+        <div class="text-gray-500 text-sm">States Covered</div>
+      </div>
+      <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 text-center">
+        <div class="text-3xl font-black text-orange-600 mb-1">4.8★</div>
+        <div class="text-gray-500 text-sm">Average Rating</div>
+      </div>
+    </div>
+
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-2xl font-black text-gray-800">Available Lawyers</h2>
+      <span id="results-count" class="text-gray-500 text-sm"></span>
+    </div>
+
+    <div id="lawyers-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Loading skeleton -->
+      <div class="bg-white rounded-2xl p-6 animate-pulse"><div class="flex items-center gap-4 mb-4"><div class="w-16 h-16 bg-gray-200 rounded-2xl"></div><div class="flex-1"><div class="h-4 bg-gray-200 rounded mb-2 w-3/4"></div><div class="h-3 bg-gray-200 rounded w-1/2"></div></div></div><div class="space-y-2"><div class="h-3 bg-gray-200 rounded"></div><div class="h-3 bg-gray-200 rounded w-3/4"></div></div></div>
+      <div class="bg-white rounded-2xl p-6 animate-pulse"><div class="flex items-center gap-4 mb-4"><div class="w-16 h-16 bg-gray-200 rounded-2xl"></div><div class="flex-1"><div class="h-4 bg-gray-200 rounded mb-2 w-3/4"></div><div class="h-3 bg-gray-200 rounded w-1/2"></div></div></div><div class="space-y-2"><div class="h-3 bg-gray-200 rounded"></div><div class="h-3 bg-gray-200 rounded w-3/4"></div></div></div>
+      <div class="bg-white rounded-2xl p-6 animate-pulse"><div class="flex items-center gap-4 mb-4"><div class="w-16 h-16 bg-gray-200 rounded-2xl"></div><div class="flex-1"><div class="h-4 bg-gray-200 rounded mb-2 w-3/4"></div><div class="h-3 bg-gray-200 rounded w-1/2"></div></div></div><div class="space-y-2"><div class="h-3 bg-gray-200 rounded"></div><div class="h-3 bg-gray-200 rounded w-3/4"></div></div></div>
+    </div>
+
+    <!-- How it works section -->
+    <div class="mt-16 bg-green-50 rounded-3xl p-8">
+      <h3 class="text-2xl font-black text-gray-800 mb-6 text-center">How Lawyer Hiring Works</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="text-center">
+          <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-3 border border-green-200 text-green-600 font-black text-lg">1</div>
+          <h4 class="font-bold text-gray-800 mb-1">Search by Location</h4>
+          <p class="text-gray-500 text-sm">Find verified lawyers near you</p>
+        </div>
+        <div class="text-center">
+          <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-3 border border-green-200 text-green-600 font-black text-lg">2</div>
+          <h4 class="font-bold text-gray-800 mb-1">Pay Through Platform</h4>
+          <p class="text-gray-500 text-sm">Secure escrow payment from your wallet</p>
+        </div>
+        <div class="text-center">
+          <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-3 border border-green-200 text-green-600 font-black text-lg">3</div>
+          <h4 class="font-bold text-gray-800 mb-1">Get Legal Help</h4>
+          <p class="text-gray-500 text-sm">Tenancy agreements, dispute resolution</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA for lawyers -->
+    <div class="mt-8 bg-gradient-to-r from-green-800 to-green-600 rounded-3xl p-8 text-center">
+      <h3 class="text-2xl font-black text-white mb-2">Are You a Property Lawyer?</h3>
+      <p class="text-green-200 mb-6">Register on DirectRent and get connected with clients across Nigeria. Set your own fees, work on your schedule.</p>
+      <a href="/pages/register.html?role=lawyer" class="bg-white text-green-700 px-8 py-3 rounded-xl font-black hover:bg-green-50 transition-all inline-block">Register as Lawyer →</a>
+    </div>
+  </div>
+
+  <!-- Hire Modal -->
+  <div id="hire-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
+      <div class="flex items-center justify-between mb-5">
+        <h3 class="font-black text-gray-800 text-lg">Hire Lawyer</h3>
+        <button onclick="closeHireModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+      </div>
+      <div id="hire-modal-lawyer" class="flex items-center gap-3 p-3 bg-green-50 rounded-xl mb-5"></div>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1">Service Fee (₦)</label>
+          <input type="number" id="hire-fee" placeholder="Enter agreed fee amount" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-green-500">
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1">Service Description</label>
+          <textarea id="hire-desc" rows="3" placeholder="Describe the legal service needed..." class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-green-500"></textarea>
+        </div>
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-700">
+          <i class="fa-solid fa-info-circle mr-1"></i> 5% platform fee applies. Payment is deducted from your wallet.
+        </div>
+        <button onclick="confirmHire()" class="w-full bg-green-600 text-white py-3.5 rounded-xl font-black hover:bg-green-500 transition-all">Hire & Pay Securely</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script>
+    const user = getUser();
+    if (user) {
+      document.getElementById('nav-auth').innerHTML = `
+        <a href="${getDashboardLink(user.role)}" class="text-gray-200 hover:text-white hover:bg-white/10 px-4 py-2 rounded-lg text-sm font-medium transition-all">${user.name.split(' ')[0]}</a>
+        <button onclick="logout()" class="bg-red-500/20 text-red-300 px-4 py-2 rounded-lg text-sm font-medium border border-red-500/30">Logout</button>
+      `;
+    }
+
+    let currentLawyer = null;
+    const avatarColors = ['bg-green-200', 'bg-blue-200', 'bg-purple-200', 'bg-orange-200', 'bg-pink-200'];
+    const textColors = ['text-green-700', 'text-blue-700', 'text-purple-700', 'text-orange-700', 'text-pink-700'];
+
+    async function loadLawyers(location = '') {
+      const container = document.getElementById('lawyers-grid');
+      container.innerHTML = '<div class="col-span-3 text-center py-8"><div class="animate-spin inline-block w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full"></div></div>';
+      try {
+        const url = location ? `/lawyers?location=${encodeURIComponent(location)}` : '/lawyers';
+        const data = await api.get(url);
+        document.getElementById('results-count').textContent = `${data.length} lawyer${data.length !== 1 ? 's' : ''} found`;
+        if (!data.length) {
+          container.innerHTML = `
+            <div class="col-span-3 text-center py-16">
+              <div class="w-16 h-16 bg-green-50 rounded-2xl flex items-center justify-center mx-auto mb-4"><i class="fa-solid fa-scale-balanced text-green-400 text-2xl"></i></div>
+              <p class="text-gray-600 font-bold text-lg">No lawyers found${location ? ' in ' + location : ''}</p>
+              <p class="text-gray-400 text-sm mt-1">Try a different location or check back soon</p>
+              <a href="/pages/register.html?role=lawyer" class="mt-4 inline-block bg-green-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold">Register as Lawyer</a>
+            </div>`;
+          return;
+        }
+        container.innerHTML = data.map((l, i) => {
+          const initials = l.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+          const color = avatarColors[i % 5];
+          const textColor = textColors[i % 5];
+          return `
+          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 card-hover">
+            <div class="flex items-start gap-4 mb-4">
+              <div class="w-16 h-16 ${color} rounded-2xl flex items-center justify-center font-black text-xl ${textColor} flex-shrink-0">${initials}</div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1">
+                  <h3 class="font-black text-gray-800 truncate">${l.name}</h3>
+                  <span class="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full font-bold whitespace-nowrap"><i class="fa-solid fa-check text-xs"></i> Verified</span>
+                </div>
+                <p class="text-gray-500 text-sm">${l.specialization || 'Property Law'}</p>
+                ${l.location ? `<p class="text-gray-400 text-xs flex items-center gap-1 mt-1"><i class="fa-solid fa-location-dot text-green-500 text-xs"></i>${l.location}</p>` : ''}
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3 mb-4">
+              <div class="bg-gray-50 rounded-xl p-3 text-center">
+                <div class="text-lg font-black text-green-600">${l.fee_percentage}%</div>
+                <div class="text-xs text-gray-500">Service Fee</div>
+              </div>
+              <div class="bg-gray-50 rounded-xl p-3 text-center">
+                <div class="text-lg font-black text-gray-800">${l.years_experience || '—'}</div>
+                <div class="text-xs text-gray-500">Yrs Experience</div>
+              </div>
+            </div>
+            ${l.bio ? `<p class="text-gray-500 text-sm mb-4 line-clamp-2">${l.bio}</p>` : ''}
+            <div class="flex gap-2 text-sm text-gray-500 mb-4">
+              ${l.license_number ? `<span class="bg-blue-50 text-blue-700 px-2 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-id-card mr-1"></i>${l.license_number}</span>` : ''}
+            </div>
+            <button onclick="openHireModal(${JSON.stringify(l).replace(/"/g, '&quot;')})" class="w-full bg-green-600 hover:bg-green-500 text-white py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2">
+              <i class="fa-solid fa-handshake"></i> Hire This Lawyer
+            </button>
+          </div>`;
+        }).join('');
+      } catch (err) {
+        container.innerHTML = `<div class="col-span-3 text-center py-8 text-red-500">${err.message}</div>`;
+      }
+    }
+
+    function searchLawyers() {
+      loadLawyers(document.getElementById('location-input').value);
+    }
+    document.getElementById('location-input').addEventListener('keypress', e => { if (e.key === 'Enter') searchLawyers(); });
+
+    function openHireModal(lawyer) {
+      if (!user) { window.location.href = '/pages/login.html'; return; }
+      currentLawyer = lawyer;
+      document.getElementById('hire-modal-lawyer').innerHTML = `
+        <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center font-black text-green-700 text-sm">${lawyer.name.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase()}</div>
+        <div><p class="font-bold text-gray-800">${lawyer.name}</p><p class="text-xs text-gray-500">${lawyer.specialization || 'Property Law'} • ${lawyer.fee_percentage}% fee</p></div>
+      `;
+      document.getElementById('hire-modal').classList.remove('hidden');
+    }
+
+    function closeHireModal() {
+      document.getElementById('hire-modal').classList.add('hidden');
+      currentLawyer = null;
+    }
+
+    async function confirmHire() {
+      const fee = document.getElementById('hire-fee').value;
+      const desc = document.getElementById('hire-desc').value;
+      if (!fee || !desc) return showToast('Fee and description are required', 'error');
+      try {
+        const data = await api.post(`/lawyers/hire/${currentLawyer.user_id}`, { amount: parseFloat(fee), description: desc });
+        showToast(data.message, 'success');
+        closeHireModal();
+      } catch (err) { showToast(err.message, 'error'); }
+    }
+
+    function showToast(message, type = 'success') {
+      const toast = document.createElement('div');
+      const bg = type === 'success' ? 'bg-green-600' : 'bg-red-600';
+      toast.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-xl text-white font-medium shadow-xl ${bg} flex items-center gap-2`;
+      toast.innerHTML = `<i class="fa-solid fa-${type==='success'?'check':'exclamation'}-circle"></i> ${message}`;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 4000);
+    }
+
+    loadLawyers();
+  </script>
+</body>
+</html>

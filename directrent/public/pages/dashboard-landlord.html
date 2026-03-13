@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Landlord Dashboard — DirectRent</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>* { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-gray-50">
+  <div class="min-h-screen flex">
+    <!-- Sidebar -->
+    <aside class="hidden lg:flex flex-col w-64 bg-blue-900 fixed h-full z-30">
+      <div class="p-6 border-b border-blue-800"><a href="/" class="flex items-center gap-3"><div class="w-9 h-9 bg-blue-500 rounded-xl flex items-center justify-center"><i class="fa-solid fa-house text-white"></i></div><span class="text-white font-black text-lg">Direct<span class="text-blue-300">Rent</span></span></a></div>
+      <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
+        <p class="text-blue-400 text-xs font-bold uppercase tracking-wider px-3 mb-2 mt-2">Landlord Menu</p>
+        <button onclick="showTab('overview')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-blue-100 hover:bg-blue-800 hover:text-white transition-all text-sm font-medium"><i class="fa-solid fa-gauge w-5"></i> Overview</button>
+        <button onclick="showTab('properties')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-blue-100 hover:bg-blue-800 hover:text-white transition-all text-sm font-medium"><i class="fa-solid fa-building w-5"></i> My Properties</button>
+        <button onclick="showTab('add-property')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-blue-100 hover:bg-blue-800 hover:text-white transition-all text-sm font-medium"><i class="fa-solid fa-plus w-5"></i> Add Property</button>
+        <button onclick="showTab('inspections')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-blue-100 hover:bg-blue-800 hover:text-white transition-all text-sm font-medium"><i class="fa-solid fa-eye w-5"></i> Inspections</button>
+        <button onclick="showTab('wallet')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-blue-100 hover:bg-blue-800 hover:text-white transition-all text-sm font-medium"><i class="fa-solid fa-wallet w-5"></i> Wallet</button>
+        <div class="pt-4 border-t border-blue-800 mt-4">
+          <button onclick="logout()" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-red-300 hover:bg-red-900/30 transition-all text-sm font-medium"><i class="fa-solid fa-right-from-bracket w-5"></i> Sign Out</button>
+        </div>
+      </nav>
+    </aside>
+
+    <div class="flex-1 lg:ml-64">
+      <header class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between sticky top-0 z-20 shadow-sm">
+        <div><h1 class="font-black text-gray-800 text-xl" id="page-title">Overview</h1><p class="text-gray-400 text-xs mt-0.5">Landlord Dashboard</p></div>
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 bg-blue-100 rounded-xl flex items-center justify-center"><i class="fa-solid fa-user text-blue-600"></i></div>
+          <div class="hidden sm:block"><div class="text-sm font-bold text-gray-800" id="user-name-display">—</div><div class="text-xs text-gray-400">Landlord</div></div>
+        </div>
+      </header>
+
+      <main class="p-6">
+        <!-- Overview -->
+        <div id="tab-overview">
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100"><div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center mb-3"><i class="fa-solid fa-building text-blue-600"></i></div><div class="text-2xl font-black text-gray-800" id="stat-props">—</div><div class="text-xs text-gray-500 mt-1">My Properties</div></div>
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100"><div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center mb-3"><i class="fa-solid fa-wallet text-green-600"></i></div><div class="text-2xl font-black text-gray-800" id="stat-balance">—</div><div class="text-xs text-gray-500 mt-1">Wallet Balance</div></div>
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100"><div class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center mb-3"><i class="fa-solid fa-eye text-orange-600"></i></div><div class="text-2xl font-black text-gray-800" id="stat-inspects">—</div><div class="text-xs text-gray-500 mt-1">Pending Inspections</div></div>
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100"><div class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center mb-3"><i class="fa-solid fa-check-circle text-purple-600"></i></div><div class="text-xl font-black text-gray-800" id="stat-status">—</div><div class="text-xs text-gray-500 mt-1">Account Status</div></div>
+          </div>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <button onclick="showTab('add-property')" class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:border-blue-300 hover:shadow-md transition-all text-center group"><div class="w-12 h-12 bg-blue-100 group-hover:bg-blue-200 rounded-2xl flex items-center justify-center mx-auto mb-3 transition-all"><i class="fa-solid fa-plus text-blue-600"></i></div><div class="font-bold text-gray-700 text-sm">Add Property</div></button>
+            <button onclick="showTab('inspections')" class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:border-orange-300 hover:shadow-md transition-all text-center group"><div class="w-12 h-12 bg-orange-100 group-hover:bg-orange-200 rounded-2xl flex items-center justify-center mx-auto mb-3 transition-all"><i class="fa-solid fa-eye text-orange-600"></i></div><div class="font-bold text-gray-700 text-sm">View Inspections</div></button>
+            <button onclick="showTab('wallet')" class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:border-green-300 hover:shadow-md transition-all text-center group"><div class="w-12 h-12 bg-green-100 group-hover:bg-green-200 rounded-2xl flex items-center justify-center mx-auto mb-3 transition-all"><i class="fa-solid fa-money-bill text-green-600"></i></div><div class="font-bold text-gray-700 text-sm">My Wallet</div></button>
+            <a href="/pages/properties.html" class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:border-purple-300 hover:shadow-md transition-all text-center group block"><div class="w-12 h-12 bg-purple-100 group-hover:bg-purple-200 rounded-2xl flex items-center justify-center mx-auto mb-3 transition-all"><i class="fa-solid fa-search text-purple-600"></i></div><div class="font-bold text-gray-700 text-sm">See Listings</div></a>
+          </div>
+        </div>
+
+        <!-- Properties -->
+        <div id="tab-properties" class="hidden">
+          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <div class="flex items-center justify-between mb-5">
+              <h4 class="font-black text-gray-800">My Properties</h4>
+              <button onclick="showTab('add-property')" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-blue-500 transition-all flex items-center gap-2"><i class="fa-solid fa-plus"></i> Add New</button>
+            </div>
+            <div id="my-properties-list" class="text-center py-12 text-gray-400"><i class="fa-solid fa-spinner fa-spin text-2xl"></i></div>
+          </div>
+        </div>
+
+        <!-- Add Property -->
+        <div id="tab-add-property" class="hidden">
+          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 lg:p-8 max-w-2xl">
+            <h4 class="font-black text-gray-800 text-lg mb-6">List a New Property</h4>
+            <form id="add-prop-form" class="space-y-5">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div class="md:col-span-2"><label class="block text-sm font-bold text-gray-700 mb-1.5">Property Title *</label><input type="text" id="prop-title" required placeholder="e.g. 4-Bedroom Duplex, Lekki Phase 1" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 font-medium"></div>
+                <div><label class="block text-sm font-bold text-gray-700 mb-1.5">Property Type *</label><select id="prop-type" required class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 font-medium"><option value="long-term">Long-term Rental</option><option value="shortlet">Shortlet</option></select></div>
+                <div><label class="block text-sm font-bold text-gray-700 mb-1.5">Annual Price (₦) *</label><input type="number" id="prop-price" required placeholder="e.g. 1500000" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 font-medium"></div>
+                <div><label class="block text-sm font-bold text-gray-700 mb-1.5">City *</label><input type="text" id="prop-city" required placeholder="e.g. Lagos" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 font-medium"></div>
+                <div><label class="block text-sm font-bold text-gray-700 mb-1.5">State *</label><input type="text" id="prop-state" required placeholder="e.g. Lagos State" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 font-medium"></div>
+                <div class="md:col-span-2"><label class="block text-sm font-bold text-gray-700 mb-1.5">Full Address</label><input type="text" id="prop-address" placeholder="Street, area, landmark..." class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 font-medium"></div>
+                <div><label class="block text-sm font-bold text-gray-700 mb-1.5">Bedrooms</label><input type="number" id="prop-beds" min="0" placeholder="0" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 font-medium"></div>
+                <div><label class="block text-sm font-bold text-gray-700 mb-1.5">Bathrooms</label><input type="number" id="prop-baths" min="0" placeholder="0" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 font-medium"></div>
+                <div class="md:col-span-2"><label class="block text-sm font-bold text-gray-700 mb-1.5">Description</label><textarea id="prop-desc" rows="4" placeholder="Describe your property — features, condition, nearby landmarks..." class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 font-medium resize-none"></textarea></div>
+              </div>
+              <div class="p-4 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-700 flex items-start gap-2"><i class="fa-solid fa-info-circle mt-0.5"></i><span>Your property will be reviewed by our admin team before going live. You must have paid the ₦5,000 onboarding fee to list properties.</span></div>
+              <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black hover:bg-blue-500 transition-all flex items-center justify-center gap-2 shadow-md"><i class="fa-solid fa-house-plus"></i> Submit Property for Review</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Inspections -->
+        <div id="tab-inspections" class="hidden">
+          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h4 class="font-black text-gray-800 mb-5">Inspection Requests</h4>
+            <div id="landlord-inspections" class="text-center py-12 text-gray-400"><i class="fa-solid fa-spinner fa-spin text-2xl"></i></div>
+          </div>
+        </div>
+
+        <!-- Wallet -->
+        <div id="tab-wallet" class="hidden">
+          <div class="bg-gradient-to-br from-blue-700 to-blue-500 rounded-2xl p-6 text-white shadow-lg mb-6">
+            <p class="text-blue-200 text-sm mb-1">Wallet Balance</p>
+            <div class="text-4xl font-black mb-4" id="landlord-balance">—</div>
+            <button onclick="openWithdraw()" class="bg-white text-blue-700 px-5 py-2.5 rounded-xl text-sm font-black hover:bg-blue-50 transition-all flex items-center gap-2 inline-flex"><i class="fa-solid fa-arrow-up"></i> Withdraw</button>
+          </div>
+          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h4 class="font-black text-gray-800 mb-4">Transaction History</h4>
+            <div id="landlord-txns" class="text-center py-8 text-gray-400"><i class="fa-solid fa-spinner fa-spin text-xl"></i></div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Withdraw Modal -->
+  <div id="withdraw-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl">
+      <div class="flex items-center justify-between mb-5"><h3 class="font-black text-gray-800">Withdraw Funds</h3><button onclick="document.getElementById('withdraw-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button></div>
+      <div class="space-y-3 mb-5">
+        <div><label class="block text-sm font-bold text-gray-700 mb-1">Amount (₦)</label><input type="number" id="w-amount" placeholder="Amount" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"></div>
+        <div><label class="block text-sm font-bold text-gray-700 mb-1">Account Number</label><input type="text" id="w-account" placeholder="0000000000" maxlength="10" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"></div>
+        <div><label class="block text-sm font-bold text-gray-700 mb-1">Bank Name</label><input type="text" id="w-bank" placeholder="e.g. GTBank" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"></div>
+      </div>
+      <button onclick="submitWithdraw()" class="w-full bg-red-500 text-white py-3.5 rounded-xl font-black hover:bg-red-400 transition-all">Withdraw (2% fee)</button>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script>
+    requireAuth('landlord');
+    const user = getUser();
+    document.getElementById('user-name-display').textContent = user.name.split(' ')[0];
+
+    const tabs = ['overview','properties','add-property','inspections','wallet'];
+    const tabTitles = {overview:'Overview','properties':'My Properties','add-property':'Add Property',inspections:'Inspections',wallet:'My Wallet'};
+
+    function showTab(name) {
+      tabs.forEach(t => document.getElementById(`tab-${t}`).classList.add('hidden'));
+      document.getElementById(`tab-${name}`).classList.remove('hidden');
+      document.getElementById('page-title').textContent = tabTitles[name];
+      if(name==='properties') loadMyProperties();
+      if(name==='inspections') loadInspections();
+      if(name==='wallet') loadWallet();
+    }
+
+    async function loadOverview() {
+      try {
+        const w = await api.get('/wallet');
+        document.getElementById('stat-balance').textContent = fmtCurrency(w.balance);
+        document.getElementById('stat-status').textContent = w.is_active ? 'Active' : 'Pending';
+      } catch {}
+      try { const p = await api.get('/properties?landlord=me'); document.getElementById('stat-props').textContent = (p.properties||[]).length; } catch {}
+      document.getElementById('stat-inspects').textContent = '0';
+    }
+
+    async function loadMyProperties() {
+      const list = document.getElementById('my-properties-list');
+      try {
+        const data = await api.get('/properties/my');
+        const props = data.properties || data || [];
+        if (!props.length) { list.innerHTML = `<div class="py-12 text-center"><i class="fa-solid fa-building text-gray-300 text-3xl mb-3"></i><p class="font-bold text-gray-600">No properties listed yet</p><button onclick="showTab('add-property')" class="mt-4 bg-blue-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold inline-block">Add First Property</button></div>`; return; }
+        list.className = 'space-y-3';
+        list.innerHTML = props.map(p => {
+          const statusColors = {available:'bg-green-100 text-green-700',rented:'bg-blue-100 text-blue-700',pending:'bg-amber-100 text-amber-700',unlisted:'bg-gray-100 text-gray-600'};
+          return `<div class="flex items-center justify-between p-4 border border-gray-100 rounded-xl hover:bg-gray-50 gap-3">
+            <div class="flex-1 min-w-0"><p class="font-bold text-gray-800 truncate">${p.title}</p><p class="text-xs text-gray-400 mt-0.5"><i class="fa-solid fa-location-dot text-blue-400"></i> ${p.city}, ${p.state} &nbsp;•&nbsp; ₦${parseFloat(p.price).toLocaleString()}/yr</p></div>
+            <span class="text-xs px-2.5 py-1 rounded-full font-bold whitespace-nowrap capitalize ${statusColors[p.status]||'bg-gray-100 text-gray-500'}">${p.status}</span>
+          </div>`;
+        }).join('');
+      } catch (err) { list.innerHTML = `<div class="text-center py-8 text-red-500">${err.message}</div>`; }
+    }
+
+    async function loadInspections() {
+      const list = document.getElementById('landlord-inspections');
+      try {
+        const data = await api.get('/inspections/landlord');
+        if (!data.length) { list.innerHTML = `<div class="py-12 text-center"><i class="fa-solid fa-eye text-gray-300 text-3xl mb-3"></i><p class="font-bold text-gray-600">No inspection requests yet</p></div>`; return; }
+        list.className = 'space-y-3';
+        list.innerHTML = data.map(i => `
+          <div class="flex items-center justify-between p-4 border border-gray-100 rounded-xl gap-3">
+            <div class="flex-1 min-w-0"><p class="font-bold text-gray-800 text-sm truncate">${i.property_title}</p><p class="text-xs text-gray-400 mt-0.5">By: ${i.tenant_name} &nbsp;•&nbsp; ${new Date(i.created_at).toLocaleDateString()}</p></div>
+            ${i.status==='pending'?`<div class="flex gap-2"><button onclick="approveInspection(${i.id})" class="bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-green-500">Approve</button><button onclick="rejectInspection(${i.id})" class="bg-red-100 text-red-600 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-red-200">Reject</button></div>`:`<span class="text-xs px-3 py-1.5 rounded-full font-bold capitalize ${i.status==='approved'?'bg-green-100 text-green-700':'bg-red-100 text-red-700'}">${i.status}</span>`}
+          </div>`).join('');
+      } catch (err) { list.innerHTML = `<div class="text-center py-8 text-red-500">${err.message}</div>`; }
+    }
+
+    async function approveInspection(id) { try { const d = await api.put(`/inspections/${id}/status`,{status:'approved'}); showToast(d.message,'success'); loadInspections(); } catch(err){showToast(err.message,'error');} }
+    async function rejectInspection(id) { try { const d = await api.put(`/inspections/${id}/status`,{status:'rejected'}); showToast(d.message,'success'); loadInspections(); } catch(err){showToast(err.message,'error');} }
+
+    async function loadWallet() {
+      try {
+        const w = await api.get('/wallet');
+        document.getElementById('landlord-balance').textContent = fmtCurrency(w.balance);
+        const txns = await api.get('/wallet/transactions');
+        const list = document.getElementById('landlord-txns');
+        if(!txns.length){list.innerHTML='<p class="text-gray-400 text-sm text-center py-4">No transactions yet</p>';return;}
+        list.className='space-y-2';
+        list.innerHTML=txns.map(t=>{const c=['deposit','refund','inspection_fee'].includes(t.type);return`<div class="flex items-center justify-between p-3 border border-gray-100 rounded-xl hover:bg-gray-50"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-xl flex items-center justify-center ${c?'bg-green-100':'bg-red-50'}"><i class="fa-solid fa-${c?'arrow-down text-green-600':'arrow-up text-red-500'} text-xs"></i></div><div><p class="text-sm font-bold text-gray-700 capitalize">${t.type.replace(/_/g,' ')}</p><p class="text-xs text-gray-400">${new Date(t.created_at).toLocaleDateString()}</p></div></div><span class="font-black ${c?'text-green-600':'text-red-500'}">${c?'+':'-'}${fmtCurrency(Math.abs(t.amount))}</span></div>`;}).join('');
+      } catch(err){showToast(err.message,'error');}
+    }
+
+    function openWithdraw(){document.getElementById('withdraw-modal').classList.remove('hidden');}
+    async function submitWithdraw(){
+      const amount=parseFloat(document.getElementById('w-amount').value),account=document.getElementById('w-account').value,bank=document.getElementById('w-bank').value;
+      if(!amount||!account||!bank)return showToast('All fields required','error');
+      try{const d=await api.post('/wallet/withdraw',{amount,account_number:account,bank_name:bank});showToast(d.message,'success');document.getElementById('withdraw-modal').classList.add('hidden');loadWallet();}catch(err){showToast(err.message,'error');}
+    }
+
+    document.getElementById('add-prop-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        const d = await api.post('/properties', {title:document.getElementById('prop-title').value,type:document.getElementById('prop-type').value,price:parseFloat(document.getElementById('prop-price').value),city:document.getElementById('prop-city').value,state:document.getElementById('prop-state').value,address:document.getElementById('prop-address').value,bedrooms:parseInt(document.getElementById('prop-beds').value)||null,bathrooms:parseInt(document.getElementById('prop-baths').value)||null,description:document.getElementById('prop-desc').value});
+        showToast(d.message,'success'); e.target.reset(); showTab('properties');
+      } catch(err){showToast(err.message,'error');}
+    });
+
+    function showToast(msg,type='success'){const t=document.createElement('div');t.className=`fixed top-4 right-4 z-[100] px-6 py-3 rounded-xl text-white font-medium shadow-2xl ${type==='success'?'bg-green-600':'bg-red-600'} flex items-center gap-2`;t.innerHTML=`<i class="fa-solid fa-${type==='success'?'check':'exclamation'}-circle"></i>${msg}`;document.body.appendChild(t);setTimeout(()=>t.remove(),4000);}
+
+    showTab('overview');
+    loadOverview();
+  </script>
+</body>
+</html>

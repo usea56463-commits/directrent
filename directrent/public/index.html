@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DirectRent — Nigeria's #1 Property Rental Platform</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    .hero-bg {
+      background: linear-gradient(135deg, rgba(5,46,22,0.92) 0%, rgba(20,83,45,0.85) 100%),
+                  url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1800&q=80') center/cover no-repeat;
+      min-height: 92vh;
+    }
+    .glass { background: rgba(255,255,255,0.08); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.15); }
+    .card-hover { transition: all 0.3s ease; }
+    .card-hover:hover { transform: translateY(-6px); box-shadow: 0 25px 60px rgba(0,0,0,0.15); }
+    .nav-scroll { transition: all 0.3s ease; }
+    .badge-shine { background: linear-gradient(135deg, #16a34a, #15803d); }
+    .prop-img { transition: transform 0.4s ease; }
+    .prop-img:hover { transform: scale(1.05); }
+    .gradient-text { background: linear-gradient(135deg, #16a34a, #4ade80); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .search-box { background: white; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+    .stat-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
+    .section-divider { height: 1px; background: linear-gradient(90deg, transparent, #e5e7eb, transparent); }
+    .testimonial-card { background: linear-gradient(135deg, #f0fdf4, #dcfce7); }
+    ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: #f1f5f9; } ::-webkit-scrollbar-thumb { background: #16a34a; border-radius: 3px; }
+  </style>
+</head>
+<body class="bg-gray-50 overflow-x-hidden">
+
+<!-- ═══════════════════ NAVBAR ═══════════════════ -->
+<nav id="navbar" class="fixed top-0 left-0 right-0 z-50 nav-scroll" style="background: rgba(5,46,22,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.1);">
+  <div class="max-w-7xl mx-auto px-4 lg:px-8">
+    <div class="flex items-center justify-between h-18 py-3">
+      <!-- Logo -->
+      <a href="/" class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center shadow-lg">
+          <i class="fa-solid fa-house text-white text-lg"></i>
+        </div>
+        <div>
+          <span class="text-white font-black text-xl tracking-tight">Direct<span class="text-green-400">Rent</span></span>
+          <div class="text-green-300 text-xs font-medium leading-none">Nigeria's #1 Rental Platform</div>
+        </div>
+      </a>
+
+      <!-- Desktop Nav -->
+      <div class="hidden lg:flex items-center gap-1">
+        <a href="/pages/properties.html" class="text-gray-200 hover:text-white hover:bg-white/10 px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2"><i class="fa-solid fa-building text-green-400"></i> Properties</a>
+        <a href="/pages/lawyers.html" class="text-gray-200 hover:text-white hover:bg-white/10 px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2"><i class="fa-solid fa-scale-balanced text-green-400"></i> Lawyers</a>
+        <a href="/pages/agents.html" class="text-gray-200 hover:text-white hover:bg-white/10 px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2"><i class="fa-solid fa-user-tie text-green-400"></i> Agents</a>
+        <a href="/pages/blog.html" class="text-gray-200 hover:text-white hover:bg-white/10 px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2"><i class="fa-solid fa-newspaper text-green-400"></i> Blog</a>
+        <a href="/pages/support.html" class="text-gray-200 hover:text-white hover:bg-white/10 px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2"><i class="fa-solid fa-headset text-green-400"></i> Support</a>
+      </div>
+
+      <!-- Auth Buttons -->
+      <div class="hidden lg:flex items-center gap-3" id="auth-btns">
+        <a href="/pages/login.html" class="text-gray-200 hover:text-white px-4 py-2 rounded-lg text-sm font-medium transition-all border border-white/20 hover:border-white/40">Sign In</a>
+        <a href="/pages/register.html" class="bg-green-500 hover:bg-green-400 text-white px-5 py-2 rounded-xl text-sm font-bold transition-all shadow-lg hover:shadow-green-500/30">Get Started Free</a>
+      </div>
+
+      <!-- User Nav (shown when logged in) -->
+      <div class="hidden" id="user-nav">
+        <div class="flex items-center gap-3">
+          <a id="dashboard-link" href="#" class="text-gray-200 hover:text-white hover:bg-white/10 px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2"><i class="fa-solid fa-gauge text-green-400"></i> <span id="user-name-nav">Dashboard</span></a>
+          <button onclick="logout()" class="bg-red-500/20 hover:bg-red-500/30 text-red-300 px-4 py-2 rounded-lg text-sm font-medium transition-all border border-red-500/30">Logout</button>
+        </div>
+      </div>
+
+      <!-- Mobile Menu Button -->
+      <button onclick="toggleMobileMenu()" class="lg:hidden text-white p-2">
+        <i class="fa-solid fa-bars text-xl" id="menu-icon"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Menu -->
+  <div id="mobile-menu" class="hidden lg:hidden border-t border-white/10 bg-green-900/95">
+    <div class="px-4 py-4 space-y-1">
+      <a href="/pages/properties.html" class="flex items-center gap-3 text-gray-200 hover:text-white hover:bg-white/10 px-4 py-3 rounded-lg text-sm font-medium transition-all"><i class="fa-solid fa-building w-5 text-green-400"></i> Properties</a>
+      <a href="/pages/lawyers.html" class="flex items-center gap-3 text-gray-200 hover:text-white hover:bg-white/10 px-4 py-3 rounded-lg text-sm font-medium transition-all"><i class="fa-solid fa-scale-balanced w-5 text-green-400"></i> Lawyers</a>
+      <a href="/pages/agents.html" class="flex items-center gap-3 text-gray-200 hover:text-white hover:bg-white/10 px-4 py-3 rounded-lg text-sm font-medium transition-all"><i class="fa-solid fa-user-tie w-5 text-green-400"></i> Agents</a>
+      <a href="/pages/blog.html" class="flex items-center gap-3 text-gray-200 hover:text-white hover:bg-white/10 px-4 py-3 rounded-lg text-sm font-medium transition-all"><i class="fa-solid fa-newspaper w-5 text-green-400"></i> Blog</a>
+      <a href="/pages/support.html" class="flex items-center gap-3 text-gray-200 hover:text-white hover:bg-white/10 px-4 py-3 rounded-lg text-sm font-medium transition-all"><i class="fa-solid fa-headset w-5 text-green-400"></i> Support</a>
+      <div class="pt-3 border-t border-white/10 flex gap-3">
+        <a href="/pages/login.html" class="flex-1 text-center text-gray-200 px-4 py-2.5 rounded-lg text-sm font-medium border border-white/20">Sign In</a>
+        <a href="/pages/register.html" class="flex-1 text-center bg-green-500 text-white px-4 py-2.5 rounded-lg text-sm font-bold">Get Started</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════════════ HERO ═══════════════════ -->
+<section class="hero-bg flex items-center pt-16">
+  <div class="max-w-7xl mx-auto px-4 lg:px-8 py-20 lg:py-28 w-full">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+      <!-- Left Content -->
+      <div>
+        <div class="inline-flex items-center gap-2 bg-green-500/20 border border-green-500/30 text-green-300 px-4 py-2 rounded-full text-sm font-medium mb-6">
+          <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+          Trusted by 10,000+ Nigerians
+        </div>
+        <h1 class="text-5xl lg:text-6xl font-black text-white leading-tight mb-6">
+          Find Your<br><span class="text-green-400">Dream Home</span><br>Safely & Fast
+        </h1>
+        <p class="text-lg text-gray-300 mb-8 leading-relaxed max-w-lg">
+          Nigeria's most trusted rental platform. Secure escrow payments, verified landlords, free inspections with your deposit badge, and legal support — all in one place.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4 mb-10">
+          <a href="/pages/properties.html" class="bg-green-500 hover:bg-green-400 text-white px-8 py-4 rounded-xl font-bold text-base transition-all shadow-lg hover:shadow-green-500/40 flex items-center justify-center gap-2">
+            <i class="fa-solid fa-search"></i> Browse Properties
+          </a>
+          <a href="/pages/register.html" class="glass text-white px-8 py-4 rounded-xl font-bold text-base hover:bg-white/15 transition-all flex items-center justify-center gap-2">
+            <i class="fa-solid fa-user-plus"></i> Create Free Account
+          </a>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="flex gap-8">
+          <div>
+            <div class="text-3xl font-black text-white">5K+</div>
+            <div class="text-green-300 text-sm">Properties</div>
+          </div>
+          <div class="border-l border-white/20 pl-8">
+            <div class="text-3xl font-black text-white">10K+</div>
+            <div class="text-green-300 text-sm">Happy Tenants</div>
+          </div>
+          <div class="border-l border-white/20 pl-8">
+            <div class="text-3xl font-black text-white">99%</div>
+            <div class="text-green-300 text-sm">Satisfaction</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Property Cards Preview -->
+      <div class="relative hidden lg:block">
+        <div class="relative">
+          <!-- Main Card -->
+          <div class="bg-white rounded-3xl overflow-hidden shadow-2xl transform rotate-2 hover:rotate-0 transition-all duration-500">
+            <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&q=80" alt="Luxury Home" class="w-full h-56 object-cover">
+            <div class="p-5">
+              <div class="flex items-center justify-between mb-2">
+                <h4 class="font-bold text-gray-800 text-lg">Luxury Duplex, Lekki</h4>
+                <span class="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full font-medium">Verified ✓</span>
+              </div>
+              <p class="text-gray-500 text-sm flex items-center gap-1"><i class="fa-solid fa-location-dot text-green-500"></i> Lekki Phase 1, Lagos</p>
+              <div class="flex items-center justify-between mt-3">
+                <span class="text-2xl font-black text-green-600">₦2.5M/yr</span>
+                <div class="flex gap-3 text-sm text-gray-500">
+                  <span><i class="fa-solid fa-bed text-green-400"></i> 4 beds</span>
+                  <span><i class="fa-solid fa-bath text-green-400"></i> 3 baths</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Floating Badge Card -->
+          <div class="absolute -bottom-6 -left-8 bg-white rounded-2xl p-4 shadow-xl flex items-center gap-3 border border-green-100">
+            <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center"><i class="fa-solid fa-shield-check text-green-600 text-lg"></i></div>
+            <div>
+              <div class="font-bold text-gray-800 text-sm">Verified Badge</div>
+              <div class="text-green-600 text-xs">Free inspections unlocked</div>
+            </div>
+          </div>
+          <!-- Floating Rating Card -->
+          <div class="absolute -top-4 -right-4 bg-white rounded-2xl p-3 shadow-xl border border-yellow-100">
+            <div class="flex items-center gap-1 text-yellow-400">
+              <i class="fa-solid fa-star text-sm"></i><i class="fa-solid fa-star text-sm"></i><i class="fa-solid fa-star text-sm"></i><i class="fa-solid fa-star text-sm"></i><i class="fa-solid fa-star text-sm"></i>
+            </div>
+            <div class="text-xs text-gray-600 font-medium mt-1">4.9/5 Rating</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ SEARCH BAR ═══════════════════ -->
+<section class="max-w-5xl mx-auto px-4 -mt-8 relative z-10">
+  <div class="search-box p-6">
+    <div class="flex flex-col lg:flex-row gap-4">
+      <div class="flex-1 relative">
+        <i class="fa-solid fa-location-dot absolute left-4 top-1/2 -translate-y-1/2 text-green-500"></i>
+        <input id="s-city" type="text" placeholder="City or neighborhood..." class="w-full pl-10 pr-4 py-4 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:border-green-400 focus:ring-2 focus:ring-green-100 text-sm font-medium">
+      </div>
+      <div class="relative">
+        <i class="fa-solid fa-house absolute left-4 top-1/2 -translate-y-1/2 text-green-500"></i>
+        <select id="s-type" class="pl-10 pr-8 py-4 border border-gray-200 rounded-xl text-gray-700 focus:outline-none focus:border-green-400 bg-white text-sm font-medium min-w-44">
+          <option value="">All Types</option>
+          <option value="long-term">Long-term</option>
+          <option value="shortlet">Shortlet</option>
+        </select>
+      </div>
+      <div class="relative">
+        <i class="fa-solid fa-naira-sign absolute left-4 top-1/2 -translate-y-1/2 text-green-500"></i>
+        <input id="s-max" type="number" placeholder="Max budget..." class="pl-10 pr-4 py-4 border border-gray-200 rounded-xl text-gray-700 focus:outline-none focus:border-green-400 focus:ring-2 focus:ring-green-100 text-sm font-medium w-44">
+      </div>
+      <button onclick="goSearch()" class="bg-green-600 hover:bg-green-500 text-white px-8 py-4 rounded-xl font-bold text-sm transition-all shadow-lg hover:shadow-green-500/30 flex items-center gap-2 whitespace-nowrap">
+        <i class="fa-solid fa-magnifying-glass"></i> Search Now
+      </button>
+    </div>
+    <div class="flex gap-2 mt-4 flex-wrap">
+      <span class="text-xs text-gray-500 mr-2 pt-1">Popular:</span>
+      <button onclick="quickSearch('Lagos')" class="text-xs bg-gray-100 hover:bg-green-100 hover:text-green-700 px-3 py-1.5 rounded-full transition-all font-medium">Lagos</button>
+      <button onclick="quickSearch('Abuja')" class="text-xs bg-gray-100 hover:bg-green-100 hover:text-green-700 px-3 py-1.5 rounded-full transition-all font-medium">Abuja</button>
+      <button onclick="quickSearch('Port Harcourt')" class="text-xs bg-gray-100 hover:bg-green-100 hover:text-green-700 px-3 py-1.5 rounded-full transition-all font-medium">Port Harcourt</button>
+      <button onclick="quickSearch('Ibadan')" class="text-xs bg-gray-100 hover:bg-green-100 hover:text-green-700 px-3 py-1.5 rounded-full transition-all font-medium">Ibadan</button>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ HOW IT WORKS ═══════════════════ -->
+<section class="max-w-7xl mx-auto px-4 lg:px-8 py-20">
+  <div class="text-center mb-14">
+    <span class="text-green-600 font-bold text-sm uppercase tracking-wider">Simple Process</span>
+    <h2 class="text-4xl font-black text-gray-900 mt-2">How DirectRent Works</h2>
+    <p class="text-gray-500 mt-3 max-w-xl mx-auto">Three simple steps to finding and securing your perfect home in Nigeria</p>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+    <div class="hidden md:block absolute top-16 left-1/3 right-1/3 h-0.5 bg-gradient-to-r from-green-200 via-green-400 to-green-200"></div>
+    <div class="text-center card-hover bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+      <div class="w-20 h-20 bg-green-50 border-4 border-green-100 rounded-2xl flex items-center justify-center mx-auto mb-6 relative">
+        <i class="fa-solid fa-magnifying-glass text-green-600 text-2xl"></i>
+        <div class="absolute -top-2 -right-2 w-7 h-7 bg-green-600 text-white rounded-full flex items-center justify-center text-xs font-black">1</div>
+      </div>
+      <h3 class="font-bold text-xl text-gray-800 mb-3">Search & Browse</h3>
+      <p class="text-gray-500 text-sm leading-relaxed">Browse thousands of verified properties across Nigeria. Filter by location, price, type, and amenities to find your perfect match.</p>
+    </div>
+    <div class="text-center card-hover bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+      <div class="w-20 h-20 bg-green-50 border-4 border-green-100 rounded-2xl flex items-center justify-center mx-auto mb-6 relative">
+        <i class="fa-solid fa-shield-check text-green-600 text-2xl"></i>
+        <div class="absolute -top-2 -right-2 w-7 h-7 bg-green-600 text-white rounded-full flex items-center justify-center text-xs font-black">2</div>
+      </div>
+      <h3 class="font-bold text-xl text-gray-800 mb-3">Deposit & Get Verified</h3>
+      <p class="text-gray-500 text-sm leading-relaxed">Deposit funds to earn your Verified Badge. Inspect properties within your budget limit completely free — no hidden fees.</p>
+    </div>
+    <div class="text-center card-hover bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+      <div class="w-20 h-20 bg-green-50 border-4 border-green-100 rounded-2xl flex items-center justify-center mx-auto mb-6 relative">
+        <i class="fa-solid fa-key text-green-600 text-2xl"></i>
+        <div class="absolute -top-2 -right-2 w-7 h-7 bg-green-600 text-white rounded-full flex items-center justify-center text-xs font-black">3</div>
+      </div>
+      <h3 class="font-bold text-xl text-gray-800 mb-3">Rent Securely</h3>
+      <p class="text-gray-500 text-sm leading-relaxed">Pay rent through our secure escrow system. Get legal support from verified lawyers. Move into your new home with confidence.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ FEATURED PROPERTIES ═══════════════════ -->
+<section class="bg-gray-50 py-20 px-4">
+  <div class="max-w-7xl mx-auto lg:px-8">
+    <div class="flex items-end justify-between mb-12">
+      <div>
+        <span class="text-green-600 font-bold text-sm uppercase tracking-wider">Hand-Picked for You</span>
+        <h2 class="text-4xl font-black text-gray-900 mt-2">Featured Properties</h2>
+        <p class="text-gray-500 mt-2">Verified, premium listings across Nigeria</p>
+      </div>
+      <a href="/pages/properties.html" class="hidden md:flex items-center gap-2 text-green-600 hover:text-green-700 font-bold border-2 border-green-200 hover:border-green-400 px-5 py-2.5 rounded-xl transition-all">
+        View All <i class="fa-solid fa-arrow-right"></i>
+      </a>
+    </div>
+    <div id="featured-properties" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Default cards while loading -->
+      <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 animate-pulse">
+        <div class="h-56 bg-gray-200"></div>
+        <div class="p-5 space-y-3"><div class="h-4 bg-gray-200 rounded w-3/4"></div><div class="h-3 bg-gray-200 rounded w-1/2"></div><div class="h-6 bg-gray-200 rounded w-1/3"></div></div>
+      </div>
+      <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 animate-pulse">
+        <div class="h-56 bg-gray-200"></div>
+        <div class="p-5 space-y-3"><div class="h-4 bg-gray-200 rounded w-3/4"></div><div class="h-3 bg-gray-200 rounded w-1/2"></div><div class="h-6 bg-gray-200 rounded w-1/3"></div></div>
+      </div>
+      <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 animate-pulse">
+        <div class="h-56 bg-gray-200"></div>
+        <div class="p-5 space-y-3"><div class="h-4 bg-gray-200 rounded w-3/4"></div><div class="h-3 bg-gray-200 rounded w-1/2"></div><div class="h-6 bg-gray-200 rounded w-1/3"></div></div>
+      </div>
+    </div>
+    <div class="mt-6 text-center md:hidden">
+      <a href="/pages/properties.html" class="inline-flex items-center gap-2 text-green-600 font-bold border-2 border-green-200 px-6 py-3 rounded-xl">View All Properties <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ PROPERTY TYPES ═══════════════════ -->
+<section class="max-w-7xl mx-auto px-4 lg:px-8 py-20">
+  <div class="text-center mb-14">
+    <span class="text-green-600 font-bold text-sm uppercase tracking-wider">Options For Everyone</span>
+    <h2 class="text-4xl font-black text-gray-900 mt-2">Explore by Type</h2>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <a href="/pages/properties.html?type=long-term" class="group relative rounded-3xl overflow-hidden h-64 card-hover">
+      <img src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&q=80" alt="Long-term rental" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+      <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+      <div class="absolute bottom-0 left-0 right-0 p-8">
+        <span class="bg-green-500 text-white text-xs px-3 py-1 rounded-full font-bold mb-2 inline-block">Long-term</span>
+        <h3 class="text-2xl font-black text-white">Rent a Home</h3>
+        <p class="text-gray-300 text-sm mt-1">Annual and monthly rentals across Nigeria</p>
+      </div>
+    </a>
+    <a href="/pages/properties.html?type=shortlet" class="group relative rounded-3xl overflow-hidden h-64 card-hover">
+      <img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80" alt="Shortlet" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+      <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+      <div class="absolute bottom-0 left-0 right-0 p-8">
+        <span class="bg-blue-500 text-white text-xs px-3 py-1 rounded-full font-bold mb-2 inline-block">Shortlet</span>
+        <h3 class="text-2xl font-black text-white">Short Stay</h3>
+        <p class="text-gray-300 text-sm mt-1">Perfect for visits, business trips & vacations</p>
+      </div>
+    </a>
+  </div>
+</section>
+
+<!-- ═══════════════════ WHO WE SERVE ═══════════════════ -->
+<section class="bg-gradient-to-br from-green-900 to-green-800 py-20 px-4">
+  <div class="max-w-7xl mx-auto lg:px-8">
+    <div class="text-center mb-14">
+      <span class="text-green-300 font-bold text-sm uppercase tracking-wider">Built For Everyone</span>
+      <h2 class="text-4xl font-black text-white mt-2">Your Role on DirectRent</h2>
+      <p class="text-green-200 mt-3 max-w-xl mx-auto">Whether you're looking for a home, listing a property, or building a career — we have you covered.</p>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="glass rounded-2xl p-6 text-center card-hover">
+        <div class="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-5">
+          <i class="fa-solid fa-person text-green-300 text-2xl"></i>
+        </div>
+        <h3 class="font-bold text-white text-lg mb-2">Tenant</h3>
+        <p class="text-green-200 text-sm mb-5 leading-relaxed">Deposit funds, earn your badge, and inspect properties for free. Pay rent securely through escrow.</p>
+        <a href="/pages/register.html?role=tenant" class="bg-green-500 hover:bg-green-400 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all inline-block">Join as Tenant</a>
+      </div>
+      <div class="glass rounded-2xl p-6 text-center card-hover">
+        <div class="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-5">
+          <i class="fa-solid fa-building text-green-300 text-2xl"></i>
+        </div>
+        <h3 class="font-bold text-white text-lg mb-2">Landlord</h3>
+        <p class="text-green-200 text-sm mb-5 leading-relaxed">List long-term or shortlet properties. Get verified by admins. Receive rent payments directly.</p>
+        <a href="/pages/register.html?role=landlord" class="bg-green-500 hover:bg-green-400 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all inline-block">List Property</a>
+      </div>
+      <div class="glass rounded-2xl p-6 text-center card-hover">
+        <div class="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-5">
+          <i class="fa-solid fa-user-tie text-green-300 text-2xl"></i>
+        </div>
+        <h3 class="font-bold text-white text-lg mb-2">Agent</h3>
+        <p class="text-green-200 text-sm mb-5 leading-relaxed">Refer landlords, tenants and lawyers. Earn commissions on every onboarding and transaction.</p>
+        <a href="/pages/register.html?role=agent" class="bg-green-500 hover:bg-green-400 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all inline-block">Become Agent</a>
+      </div>
+      <div class="glass rounded-2xl p-6 text-center card-hover">
+        <div class="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-5">
+          <i class="fa-solid fa-scale-balanced text-green-300 text-2xl"></i>
+        </div>
+        <h3 class="font-bold text-white text-lg mb-2">Lawyer</h3>
+        <p class="text-green-200 text-sm mb-5 leading-relaxed">Register your legal services, get verified by admins, and receive clients based on your proximity.</p>
+        <a href="/pages/register.html?role=lawyer" class="bg-green-500 hover:bg-green-400 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all inline-block">Join as Lawyer</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ FEATURES ═══════════════════ -->
+<section class="max-w-7xl mx-auto px-4 lg:px-8 py-20">
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+    <div>
+      <span class="text-green-600 font-bold text-sm uppercase tracking-wider">Why Choose Us</span>
+      <h2 class="text-4xl font-black text-gray-900 mt-2 mb-6">Everything You Need,<br>All In One Platform</h2>
+      <div class="space-y-5">
+        <div class="flex items-start gap-4 p-5 bg-white rounded-2xl shadow-sm border border-gray-100 card-hover">
+          <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-lock text-green-600 text-lg"></i></div>
+          <div><h4 class="font-bold text-gray-800 mb-1">Escrow Protection</h4><p class="text-gray-500 text-sm">All payments held securely. No risk of fraud or offline scams.</p></div>
+        </div>
+        <div class="flex items-start gap-4 p-5 bg-white rounded-2xl shadow-sm border border-gray-100 card-hover">
+          <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-badge-check text-blue-600 text-lg"></i></div>
+          <div><h4 class="font-bold text-gray-800 mb-1">Verified Badge System</h4><p class="text-gray-500 text-sm">Deposit funds to unlock a verified badge and get free inspections.</p></div>
+        </div>
+        <div class="flex items-start gap-4 p-5 bg-white rounded-2xl shadow-sm border border-gray-100 card-hover">
+          <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-scale-balanced text-purple-600 text-lg"></i></div>
+          <div><h4 class="font-bold text-gray-800 mb-1">Verified Legal Support</h4><p class="text-gray-500 text-sm">Connect with nearby verified lawyers for tenancy agreements and disputes.</p></div>
+        </div>
+        <div class="flex items-start gap-4 p-5 bg-white rounded-2xl shadow-sm border border-gray-100 card-hover">
+          <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-money-bill-trend-up text-orange-600 text-lg"></i></div>
+          <div><h4 class="font-bold text-gray-800 mb-1">Earn as You Refer</h4><p class="text-gray-500 text-sm">Agents earn commissions on every referral, inspection, and rent payment.</p></div>
+        </div>
+      </div>
+    </div>
+    <div class="relative">
+      <img src="https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?w=700&q=80" alt="Modern home interior" class="rounded-3xl shadow-2xl w-full object-cover h-96 lg:h-[500px]">
+      <div class="absolute -bottom-6 -left-6 bg-white rounded-2xl p-5 shadow-xl border border-green-100">
+        <div class="flex items-center gap-3 mb-2">
+          <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center"><i class="fa-solid fa-chart-line text-green-600"></i></div>
+          <div class="font-bold text-gray-800">₦2.4B+</div>
+        </div>
+        <div class="text-gray-500 text-xs">Total rent processed securely</div>
+      </div>
+      <div class="absolute -top-4 -right-4 bg-white rounded-2xl p-4 shadow-xl border border-blue-100">
+        <div class="flex items-center gap-1 text-yellow-400 mb-1">
+          <i class="fa-solid fa-star text-sm"></i><i class="fa-solid fa-star text-sm"></i><i class="fa-solid fa-star text-sm"></i><i class="fa-solid fa-star text-sm"></i><i class="fa-solid fa-star text-sm"></i>
+        </div>
+        <div class="text-xs text-gray-700 font-bold">4.9 • 2,847 reviews</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ CITIES ═══════════════════ -->
+<section class="bg-gray-50 py-20 px-4">
+  <div class="max-w-7xl mx-auto lg:px-8">
+    <div class="text-center mb-12">
+      <span class="text-green-600 font-bold text-sm uppercase tracking-wider">Available Nationwide</span>
+      <h2 class="text-4xl font-black text-gray-900 mt-2">Top Cities</h2>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <a href="/pages/properties.html?city=Lagos" class="group">
+        <div class="relative rounded-2xl overflow-hidden h-40 card-hover">
+          <img src="https://images.unsplash.com/photo-1555990793-da11153b2473?w=400&q=80" alt="Lagos" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+          <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+          <div class="absolute bottom-3 left-3 text-white font-bold text-sm">Lagos</div>
+        </div>
+      </a>
+      <a href="/pages/properties.html?city=Abuja" class="group">
+        <div class="relative rounded-2xl overflow-hidden h-40 card-hover">
+          <img src="https://images.unsplash.com/photo-1564013434775-f71db0030976?w=400&q=80" alt="Abuja" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+          <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+          <div class="absolute bottom-3 left-3 text-white font-bold text-sm">Abuja</div>
+        </div>
+      </a>
+      <a href="/pages/properties.html?city=Port+Harcourt" class="group">
+        <div class="relative rounded-2xl overflow-hidden h-40 card-hover">
+          <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80" alt="Port Harcourt" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+          <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+          <div class="absolute bottom-3 left-3 text-white font-bold text-sm">Port Harcourt</div>
+        </div>
+      </a>
+      <a href="/pages/properties.html?city=Ibadan" class="group">
+        <div class="relative rounded-2xl overflow-hidden h-40 card-hover">
+          <img src="https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=400&q=80" alt="Ibadan" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+          <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+          <div class="absolute bottom-3 left-3 text-white font-bold text-sm">Ibadan</div>
+        </div>
+      </a>
+      <a href="/pages/properties.html?city=Kano" class="group">
+        <div class="relative rounded-2xl overflow-hidden h-40 card-hover">
+          <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&q=80" alt="Kano" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+          <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+          <div class="absolute bottom-3 left-3 text-white font-bold text-sm">Kano</div>
+        </div>
+      </a>
+      <a href="/pages/properties.html?city=Enugu" class="group">
+        <div class="relative rounded-2xl overflow-hidden h-40 card-hover">
+          <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=400&q=80" alt="Enugu" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+          <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+          <div class="absolute bottom-3 left-3 text-white font-bold text-sm">Enugu</div>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ TESTIMONIALS ═══════════════════ -->
+<section class="max-w-7xl mx-auto px-4 lg:px-8 py-20">
+  <div class="text-center mb-14">
+    <span class="text-green-600 font-bold text-sm uppercase tracking-wider">Success Stories</span>
+    <h2 class="text-4xl font-black text-gray-900 mt-2">What Our Users Say</h2>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="testimonial-card p-6 rounded-2xl card-hover">
+      <div class="flex items-center gap-1 text-yellow-400 mb-4">
+        <i class="fa-solid fa-star text-sm"></i><i class="fa-solid fa-star text-sm"></i><i class="fa-solid fa-star text-sm"></i><i class="fa-solid fa-star text-sm"></i><i class="fa-solid fa-star text-sm"></i>
+      </div>
+      <p class="text-gray-700 text-sm leading-relaxed mb-5">"DirectRent helped me find and move into my Lekki apartment in 3 days. The badge system is genius — my deposit covered the inspection cost completely!"</p>
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-green-200 flex items-center justify-center font-bold text-green-700">AI</div>
+        <div><div class="font-bold text-gray-800 text-sm">Amaka I.</div><div class="text-gray-500 text-xs">Tenant, Lagos</div></div>
+      </div>
+    </div>
+    <div class="testimonial-card p-6 rounded-2xl card-hover">
+      <div class="flex items-center gap-1 text-yellow-400 mb-4">
+        <i class="fa-solid fa-star text-sm"></i><i class="fa-solid fa-star text-sm"></i><i class="fa-solid fa-star text-sm"></i><i class="fa-solid fa-star text-sm"></i><i class="fa-solid fa-star text-sm"></i>
+      </div>
+      <p class="text-gray-700 text-sm leading-relaxed mb-5">"As a landlord, I got my property verified in 24 hours and had 5 inspection requests within the first week. The platform handles everything professionally."</p>
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-green-200 flex items-center justify-center font-bold text-green-700">KO</div>
+        <div><div class="font-bold text-gray-800 text-sm">Kunle O.</div><div class="text-gray-500 text-xs">Landlord, Abuja</div></div>
+      </div>
+    </div>
+    <div class="testimonial-card p-6 rounded-2xl card-hover">
+      <div class="flex items-center gap-1 text-yellow-400 mb-4">
+        <i class="fa-solid fa-star text-sm"></i><i class="fa-solid fa-star text-sm"></i><i class="fa-solid fa-star text-sm"></i><i class="fa-solid fa-star text-sm"></i><i class="fa-solid fa-star text-sm"></i>
+      </div>
+      <p class="text-gray-700 text-sm leading-relaxed mb-5">"I've earned over ₦180,000 in commissions just from referring 8 landlords and their tenants. Best passive income decision I've ever made!"</p>
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-green-200 flex items-center justify-center font-bold text-green-700">TM</div>
+        <div><div class="font-bold text-gray-800 text-sm">Tunde M.</div><div class="text-gray-500 text-xs">Agent, Port Harcourt</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ CTA ═══════════════════ -->
+<section class="px-4 pb-20">
+  <div class="max-w-5xl mx-auto">
+    <div class="rounded-3xl overflow-hidden relative">
+      <img src="https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200&q=80" alt="Beautiful Home" class="w-full h-80 object-cover">
+      <div class="absolute inset-0 bg-gradient-to-r from-green-900/95 via-green-800/80 to-green-900/60 flex items-center">
+        <div class="p-10 lg:p-16">
+          <h2 class="text-3xl lg:text-5xl font-black text-white mb-4 leading-tight">Ready to Find<br>Your New Home?</h2>
+          <p class="text-green-200 mb-8 text-base max-w-sm">Join thousands of Nigerians who trust DirectRent for safe, transparent, and convenient property rentals.</p>
+          <div class="flex flex-col sm:flex-row gap-4">
+            <a href="/pages/register.html" class="bg-green-500 hover:bg-green-400 text-white px-8 py-4 rounded-xl font-bold transition-all shadow-lg text-center">Start for Free</a>
+            <a href="/pages/properties.html" class="bg-white/10 backdrop-blur hover:bg-white/20 text-white px-8 py-4 rounded-xl font-bold transition-all text-center border border-white/20">Browse Properties</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ FOOTER ═══════════════════ -->
+<footer class="bg-gray-900 text-gray-400 pt-16 pb-8 px-4">
+  <div class="max-w-7xl mx-auto lg:px-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-12">
+      <!-- Brand -->
+      <div class="lg:col-span-2">
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-10 h-10 bg-green-600 rounded-xl flex items-center justify-center"><i class="fa-solid fa-house text-white"></i></div>
+          <span class="text-white font-black text-xl">Direct<span class="text-green-400">Rent</span></span>
+        </div>
+        <p class="text-sm leading-relaxed mb-6 max-w-xs">Nigeria's most trusted property rental platform. Secure, transparent, and built for Nigerians.</p>
+        <div class="flex gap-3">
+          <a href="#" class="w-9 h-9 bg-gray-800 hover:bg-green-600 rounded-lg flex items-center justify-center transition-all"><i class="fa-brands fa-facebook-f text-sm"></i></a>
+          <a href="#" class="w-9 h-9 bg-gray-800 hover:bg-green-600 rounded-lg flex items-center justify-center transition-all"><i class="fa-brands fa-twitter text-sm"></i></a>
+          <a href="#" class="w-9 h-9 bg-gray-800 hover:bg-green-600 rounded-lg flex items-center justify-center transition-all"><i class="fa-brands fa-instagram text-sm"></i></a>
+          <a href="#" class="w-9 h-9 bg-gray-800 hover:bg-green-600 rounded-lg flex items-center justify-center transition-all"><i class="fa-brands fa-whatsapp text-sm"></i></a>
+        </div>
+      </div>
+      <!-- Platform -->
+      <div>
+        <h5 class="text-white font-bold mb-5">Platform</h5>
+        <ul class="space-y-3 text-sm">
+          <li><a href="/pages/properties.html" class="hover:text-green-400 transition-colors flex items-center gap-2"><i class="fa-solid fa-chevron-right text-xs text-green-600"></i> Properties</a></li>
+          <li><a href="/pages/lawyers.html" class="hover:text-green-400 transition-colors flex items-center gap-2"><i class="fa-solid fa-chevron-right text-xs text-green-600"></i> Find a Lawyer</a></li>
+          <li><a href="/pages/agents.html" class="hover:text-green-400 transition-colors flex items-center gap-2"><i class="fa-solid fa-chevron-right text-xs text-green-600"></i> Find an Agent</a></li>
+          <li><a href="/pages/blog.html" class="hover:text-green-400 transition-colors flex items-center gap-2"><i class="fa-solid fa-chevron-right text-xs text-green-600"></i> Blog</a></li>
+          <li><a href="/pages/support.html" class="hover:text-green-400 transition-colors flex items-center gap-2"><i class="fa-solid fa-chevron-right text-xs text-green-600"></i> Support</a></li>
+        </ul>
+      </div>
+      <!-- Users -->
+      <div>
+        <h5 class="text-white font-bold mb-5">Join As</h5>
+        <ul class="space-y-3 text-sm">
+          <li><a href="/pages/register.html?role=tenant" class="hover:text-green-400 transition-colors flex items-center gap-2"><i class="fa-solid fa-chevron-right text-xs text-green-600"></i> Tenant</a></li>
+          <li><a href="/pages/register.html?role=landlord" class="hover:text-green-400 transition-colors flex items-center gap-2"><i class="fa-solid fa-chevron-right text-xs text-green-600"></i> Landlord</a></li>
+          <li><a href="/pages/register.html?role=agent" class="hover:text-green-400 transition-colors flex items-center gap-2"><i class="fa-solid fa-chevron-right text-xs text-green-600"></i> Agent</a></li>
+          <li><a href="/pages/register.html?role=lawyer" class="hover:text-green-400 transition-colors flex items-center gap-2"><i class="fa-solid fa-chevron-right text-xs text-green-600"></i> Lawyer</a></li>
+        </ul>
+      </div>
+      <!-- Contact -->
+      <div>
+        <h5 class="text-white font-bold mb-5">Contact Us</h5>
+        <ul class="space-y-3 text-sm">
+          <li class="flex items-start gap-2"><i class="fa-solid fa-envelope text-green-500 mt-0.5"></i> admin@directrent.ng</li>
+          <li class="flex items-start gap-2"><i class="fa-solid fa-phone text-green-500 mt-0.5"></i> +234 800 DIRECT</li>
+          <li class="flex items-start gap-2"><i class="fa-solid fa-location-dot text-green-500 mt-0.5"></i> Lagos, Nigeria</li>
+        </ul>
+      </div>
+    </div>
+    <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-sm">
+      <p>&copy; 2025 DirectRent. All rights reserved.</p>
+      <div class="flex gap-6">
+        <a href="#" class="hover:text-green-400 transition-colors">Privacy Policy</a>
+        <a href="#" class="hover:text-green-400 transition-colors">Terms of Service</a>
+        <a href="#" class="hover:text-green-400 transition-colors">Cookie Policy</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="/js/api.js"></script>
+<script>
+  // Auth state
+  const user = getUser();
+  if (user) {
+    document.getElementById('auth-btns').classList.add('hidden');
+    document.getElementById('user-nav').classList.remove('hidden');
+    document.getElementById('dashboard-link').href = getDashboardLink(user.role);
+    document.getElementById('user-name-nav').textContent = user.name.split(' ')[0];
+  }
+
+  // Mobile menu
+  function toggleMobileMenu() {
+    const menu = document.getElementById('mobile-menu');
+    const icon = document.getElementById('menu-icon');
+    menu.classList.toggle('hidden');
+    icon.className = menu.classList.contains('hidden') ? 'fa-solid fa-bars text-xl' : 'fa-solid fa-xmark text-xl';
+  }
+
+  // Search
+  function goSearch() {
+    const city = document.getElementById('s-city').value;
+    const type = document.getElementById('s-type').value;
+    const max = document.getElementById('s-max').value;
+    let url = '/pages/properties.html?';
+    if (city) url += `city=${encodeURIComponent(city)}&`;
+    if (type) url += `type=${type}&`;
+    if (max) url += `max_price=${max}&`;
+    window.location.href = url;
+  }
+  function quickSearch(city) {
+    document.getElementById('s-city').value = city;
+    goSearch();
+  }
+  document.getElementById('s-city').addEventListener('keypress', e => { if(e.key === 'Enter') goSearch(); });
+
+  // Navbar scroll effect
+  window.addEventListener('scroll', () => {
+    const nav = document.getElementById('navbar');
+    if (window.scrollY > 50) {
+      nav.style.background = 'rgba(5,46,22,0.98)';
+      nav.style.boxShadow = '0 4px 30px rgba(0,0,0,0.3)';
+    } else {
+      nav.style.background = 'rgba(5,46,22,0.95)';
+      nav.style.boxShadow = 'none';
+    }
+  });
+
+  // Property image pool
+  const propImages = [
+    'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&q=80',
+    'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=600&q=80',
+    'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=600&q=80',
+    'https://images.unsplash.com/photo-1575517111839-3a3843ee7f5d?w=600&q=80',
+    'https://images.unsplash.com/photo-1584738766473-61c083514bf4?w=600&q=80',
+    'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=600&q=80',
+    'https://images.unsplash.com/photo-1613977257363-707ba9348227?w=600&q=80',
+    'https://images.unsplash.com/photo-1523217582562-09d05606c584?w=600&q=80',
+  ];
+
+  async function loadFeaturedProperties() {
+    try {
+      const data = await api.get('/properties?limit=6');
+      const container = document.getElementById('featured-properties');
+      if (!data.properties || data.properties.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-3 text-center py-16 bg-white rounded-2xl border border-gray-100">
+            <div class="w-16 h-16 bg-green-50 rounded-2xl flex items-center justify-center mx-auto mb-4"><i class="fa-solid fa-house text-green-400 text-2xl"></i></div>
+            <p class="text-gray-600 font-medium">No properties listed yet</p>
+            <p class="text-gray-400 text-sm mt-1">Be the first to list a property!</p>
+            <a href="/pages/register.html?role=landlord" class="mt-4 inline-block bg-green-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold">List Your Property</a>
+          </div>`;
+        return;
+      }
+      container.innerHTML = data.properties.map((p, i) => `
+        <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 card-hover group">
+          <div class="relative overflow-hidden h-56">
+            <img src="${propImages[i % propImages.length]}" alt="${p.title}" class="w-full h-full object-cover prop-img">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            ${p.ad_placement ? '<div class="absolute top-3 left-3 bg-yellow-400 text-yellow-900 text-xs px-3 py-1 rounded-full font-bold flex items-center gap-1"><i class="fa-solid fa-star text-xs"></i> Featured</div>' : ''}
+            <div class="absolute top-3 right-3 bg-white/90 backdrop-blur text-xs px-3 py-1 rounded-full font-bold text-green-700 capitalize">${p.type.replace('-',' ')}</div>
+          </div>
+          <div class="p-5">
+            <h3 class="font-bold text-gray-800 text-lg mb-1 leading-tight truncate">${p.title}</h3>
+            <p class="text-gray-500 text-sm flex items-center gap-1 mb-3"><i class="fa-solid fa-location-dot text-green-500 text-xs"></i> ${[p.city, p.state].filter(Boolean).join(', ') || p.address}</p>
+            <div class="flex gap-4 text-sm text-gray-500 mb-4">
+              ${p.bedrooms ? `<span class="flex items-center gap-1"><i class="fa-solid fa-bed text-green-400"></i> ${p.bedrooms} Beds</span>` : ''}
+              ${p.bathrooms ? `<span class="flex items-center gap-1"><i class="fa-solid fa-bath text-green-400"></i> ${p.bathrooms} Baths</span>` : ''}
+              <span class="flex items-center gap-1 text-xs text-gray-400">by ${p.landlord_name}</span>
+            </div>
+            <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+              <div>
+                <div class="text-2xl font-black text-green-600">₦${parseFloat(p.price).toLocaleString()}</div>
+                <div class="text-xs text-gray-400">per year</div>
+              </div>
+              <a href="/pages/properties.html" class="bg-green-600 hover:bg-green-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all">View Details</a>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    } catch {
+      document.getElementById('featured-properties').innerHTML = `
+        <div class="col-span-3 text-center py-12">
+          <p class="text-gray-400">Unable to load properties. Check your connection.</p>
+        </div>`;
+    }
+  }
+  loadFeaturedProperties();
+</script>
+</body>
+</html>

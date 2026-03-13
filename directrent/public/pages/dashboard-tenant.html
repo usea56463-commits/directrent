@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tenant Dashboard — DirectRent</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>* { font-family: 'Inter', sans-serif; } .tab-active { background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.08); color: #15803d; font-weight: 700; }</style>
+</head>
+<body class="bg-gray-50">
+  <!-- Sidebar + Top Nav Layout -->
+  <div class="min-h-screen flex">
+    <!-- Sidebar -->
+    <aside class="hidden lg:flex flex-col w-64 bg-green-900 fixed h-full z-30">
+      <div class="p-6 border-b border-green-800">
+        <a href="/" class="flex items-center gap-3"><div class="w-9 h-9 bg-green-500 rounded-xl flex items-center justify-center"><i class="fa-solid fa-house text-white"></i></div><span class="text-white font-black text-lg">Direct<span class="text-green-300">Rent</span></span></a>
+      </div>
+      <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
+        <p class="text-green-500 text-xs font-bold uppercase tracking-wider px-3 mb-2 mt-2">Navigation</p>
+        <button onclick="showTab('overview')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-green-100 hover:bg-green-800 hover:text-white transition-all text-sm font-medium"><i class="fa-solid fa-gauge w-5"></i> Overview</button>
+        <button onclick="showTab('wallet')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-green-100 hover:bg-green-800 hover:text-white transition-all text-sm font-medium"><i class="fa-solid fa-wallet w-5"></i> Wallet</button>
+        <button onclick="showTab('inspections')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-green-100 hover:bg-green-800 hover:text-white transition-all text-sm font-medium"><i class="fa-solid fa-magnifying-glass-location w-5"></i> Inspections</button>
+        <button onclick="showTab('payments')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-green-100 hover:bg-green-800 hover:text-white transition-all text-sm font-medium"><i class="fa-solid fa-credit-card w-5"></i> Payments</button>
+        <button onclick="showTab('kyc')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-green-100 hover:bg-green-800 hover:text-white transition-all text-sm font-medium"><i class="fa-solid fa-id-card w-5"></i> KYC / ID Verify</button>
+        <button onclick="showTab('profile')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-green-100 hover:bg-green-800 hover:text-white transition-all text-sm font-medium"><i class="fa-solid fa-user w-5"></i> Profile</button>
+        <div class="pt-4 border-t border-green-800 mt-4">
+          <a href="/pages/properties.html" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-green-100 hover:bg-green-800 hover:text-white transition-all text-sm font-medium"><i class="fa-solid fa-building w-5"></i> Browse Properties</a>
+          <button onclick="logout()" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-red-300 hover:bg-red-900/30 hover:text-red-200 transition-all text-sm font-medium mt-1"><i class="fa-solid fa-right-from-bracket w-5"></i> Sign Out</button>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Area -->
+    <div class="flex-1 lg:ml-64">
+      <!-- Top Bar -->
+      <header class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between sticky top-0 z-20 shadow-sm">
+        <div>
+          <h1 class="font-black text-gray-800 text-xl" id="page-title">Overview</h1>
+          <p class="text-gray-400 text-xs mt-0.5">Tenant Dashboard</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <div id="badge-display" class="hidden items-center gap-1.5 bg-green-50 border border-green-200 text-green-700 px-3 py-1.5 rounded-full text-xs font-bold"><i class="fa-solid fa-shield-check text-green-500"></i> Verified Badge</div>
+          <div class="w-9 h-9 bg-green-100 rounded-xl flex items-center justify-center"><i class="fa-solid fa-user text-green-600"></i></div>
+          <div class="hidden sm:block"><div class="text-sm font-bold text-gray-800" id="user-name-display">—</div><div class="text-xs text-gray-400">Tenant</div></div>
+        </div>
+      </header>
+
+      <main class="p-6">
+        <!-- OVERVIEW TAB -->
+        <div id="tab-overview">
+          <!-- Stats -->
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+              <div class="flex items-center justify-between mb-3"><div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center"><i class="fa-solid fa-wallet text-green-600"></i></div><span class="text-xs text-green-600 font-bold bg-green-50 px-2 py-0.5 rounded-full">Balance</span></div>
+              <div class="text-2xl font-black text-gray-800" id="stat-balance">—</div>
+              <div class="text-xs text-gray-500 mt-1">Wallet Balance</div>
+            </div>
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+              <div class="flex items-center justify-between mb-3"><div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center"><i class="fa-solid fa-magnifying-glass text-blue-600"></i></div></div>
+              <div class="text-2xl font-black text-gray-800" id="stat-inspections">—</div>
+              <div class="text-xs text-gray-500 mt-1">Total Inspections</div>
+            </div>
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+              <div class="flex items-center justify-between mb-3"><div class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center"><i class="fa-solid fa-money-bill text-purple-600"></i></div></div>
+              <div class="text-2xl font-black text-gray-800" id="stat-payments">—</div>
+              <div class="text-xs text-gray-500 mt-1">Rent Payments</div>
+            </div>
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+              <div class="flex items-center justify-between mb-3"><div class="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center"><i class="fa-solid fa-shield-check text-amber-600"></i></div></div>
+              <div class="text-xl font-black text-gray-800" id="stat-badge">—</div>
+              <div class="text-xs text-gray-500 mt-1">Badge Status</div>
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          <h3 class="font-black text-gray-800 text-lg mb-4">Quick Actions</h3>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <button onclick="showTab('wallet')" class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:border-green-300 hover:shadow-md transition-all text-center group">
+              <div class="w-12 h-12 bg-green-100 group-hover:bg-green-200 rounded-2xl flex items-center justify-center mx-auto mb-3 transition-all"><i class="fa-solid fa-plus text-green-600"></i></div>
+              <div class="font-bold text-gray-700 text-sm">Deposit Funds</div>
+            </button>
+            <a href="/pages/properties.html" class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:border-blue-300 hover:shadow-md transition-all text-center group block">
+              <div class="w-12 h-12 bg-blue-100 group-hover:bg-blue-200 rounded-2xl flex items-center justify-center mx-auto mb-3 transition-all"><i class="fa-solid fa-search text-blue-600"></i></div>
+              <div class="font-bold text-gray-700 text-sm">Find Property</div>
+            </a>
+            <button onclick="showTab('kyc')" class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:border-orange-300 hover:shadow-md transition-all text-center group">
+              <div class="w-12 h-12 bg-orange-100 group-hover:bg-orange-200 rounded-2xl flex items-center justify-center mx-auto mb-3 transition-all"><i class="fa-solid fa-id-card text-orange-600"></i></div>
+              <div class="font-bold text-gray-700 text-sm">Verify ID</div>
+            </button>
+            <a href="/pages/lawyers.html" class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:border-purple-300 hover:shadow-md transition-all text-center group block">
+              <div class="w-12 h-12 bg-purple-100 group-hover:bg-purple-200 rounded-2xl flex items-center justify-center mx-auto mb-3 transition-all"><i class="fa-solid fa-scale-balanced text-purple-600"></i></div>
+              <div class="font-bold text-gray-700 text-sm">Find Lawyer</div>
+            </a>
+          </div>
+
+          <!-- How verified badge works -->
+          <div class="bg-gradient-to-r from-green-800 to-green-600 rounded-2xl p-6 text-white">
+            <div class="flex items-start gap-4">
+              <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-shield-check text-2xl"></i></div>
+              <div>
+                <h4 class="font-black text-lg mb-1">Unlock Free Inspections</h4>
+                <p class="text-green-200 text-sm leading-relaxed mb-3">Deposit funds into your wallet to earn a Verified Badge. Once verified, inspect any property priced at or below your deposit — completely free!</p>
+                <button onclick="showTab('wallet')" class="bg-white text-green-700 px-5 py-2 rounded-xl text-sm font-black hover:bg-green-50 transition-all">Deposit Now →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- WALLET TAB -->
+        <div id="tab-wallet" class="hidden">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <!-- Balance Card -->
+            <div class="bg-gradient-to-br from-green-700 to-green-500 rounded-2xl p-6 text-white shadow-lg">
+              <p class="text-green-200 text-sm font-medium mb-1">Available Balance</p>
+              <div class="text-4xl font-black mb-4" id="wallet-balance">—</div>
+              <div class="flex gap-3">
+                <button onclick="openDeposit()" class="bg-white text-green-700 px-4 py-2.5 rounded-xl text-sm font-black hover:bg-green-50 transition-all flex items-center gap-1.5"><i class="fa-solid fa-plus text-sm"></i> Deposit</button>
+                <button onclick="openWithdraw()" class="bg-white/20 border border-white/30 text-white px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-white/30 transition-all flex items-center gap-1.5"><i class="fa-solid fa-arrow-up text-sm"></i> Withdraw</button>
+              </div>
+            </div>
+            <!-- Deposit Info -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+              <h4 class="font-black text-gray-800 mb-4">Verified Badge Status</h4>
+              <div id="badge-status-card" class="text-center py-6">
+                <div class="animate-spin inline-block w-6 h-6 border-3 border-green-500 border-t-transparent rounded-full"></div>
+              </div>
+            </div>
+          </div>
+          <!-- Transaction History -->
+          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h4 class="font-black text-gray-800 mb-4">Transaction History</h4>
+            <div id="transactions-list" class="space-y-2 text-center py-8 text-gray-400"><i class="fa-solid fa-spinner fa-spin text-xl"></i></div>
+          </div>
+        </div>
+
+        <!-- INSPECTIONS TAB -->
+        <div id="tab-inspections" class="hidden">
+          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <div class="flex items-center justify-between mb-5">
+              <h4 class="font-black text-gray-800">My Inspection Requests</h4>
+              <a href="/pages/properties.html" class="bg-green-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-green-500 transition-all flex items-center gap-2"><i class="fa-solid fa-search"></i> Browse Properties</a>
+            </div>
+            <div id="inspections-list" class="text-center py-12 text-gray-400"><i class="fa-solid fa-spinner fa-spin text-2xl"></i></div>
+          </div>
+        </div>
+
+        <!-- PAYMENTS TAB -->
+        <div id="tab-payments" class="hidden">
+          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h4 class="font-black text-gray-800 mb-5">Payment History</h4>
+            <div id="payments-list" class="text-center py-12 text-gray-400"><i class="fa-solid fa-spinner fa-spin text-2xl"></i></div>
+          </div>
+        </div>
+
+        <!-- KYC TAB -->
+        <div id="tab-kyc" class="hidden">
+          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 lg:p-8 max-w-lg">
+            <h4 class="font-black text-gray-800 text-lg mb-2">Identity Verification (KYC)</h4>
+            <p class="text-gray-500 text-sm mb-6">Required for deposits of ₦500,000 and above. Upload a valid government-issued ID.</p>
+            <div id="kyc-status-display" class="mb-4"></div>
+            <form id="kyc-form" class="space-y-5">
+              <div>
+                <label class="block text-sm font-bold text-gray-700 mb-1.5">Document Type</label>
+                <select id="kyc-type" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-green-500 font-medium">
+                  <option value="nin">NIN (National Identification Number)</option>
+                  <option value="bvn">BVN</option>
+                  <option value="passport">International Passport</option>
+                  <option value="drivers_license">Driver's License</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-gray-700 mb-1.5">Document Number</label>
+                <input type="text" id="kyc-number" required placeholder="Enter document number..." class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-green-500 font-medium">
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-gray-700 mb-1.5">Document Upload</label>
+                <div class="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center hover:border-green-400 transition-colors">
+                  <i class="fa-solid fa-cloud-arrow-up text-gray-400 text-3xl mb-2"></i>
+                  <p class="text-sm text-gray-500 mb-2">Upload clear photo of your document</p>
+                  <input type="file" id="kyc-file" accept="image/*,.pdf" class="text-xs text-gray-500">
+                </div>
+              </div>
+              <button type="submit" class="w-full bg-green-600 text-white py-4 rounded-xl font-black hover:bg-green-500 transition-all flex items-center justify-center gap-2">
+                <i class="fa-solid fa-upload"></i> Submit for Verification
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- PROFILE TAB -->
+        <div id="tab-profile" class="hidden">
+          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 lg:p-8 max-w-lg">
+            <h4 class="font-black text-gray-800 text-lg mb-6">Profile Settings</h4>
+            <form id="profile-form" class="space-y-5">
+              <div><label class="block text-sm font-bold text-gray-700 mb-1.5">Full Name</label><input type="text" id="p-name" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-green-500 font-medium"></div>
+              <div><label class="block text-sm font-bold text-gray-700 mb-1.5">Phone Number</label><input type="tel" id="p-phone" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-green-500 font-medium"></div>
+              <div><label class="block text-sm font-bold text-gray-700 mb-1.5">Email Address</label><input type="email" id="p-email" disabled class="w-full border-2 border-gray-100 bg-gray-50 rounded-xl px-4 py-3 text-sm text-gray-400 cursor-not-allowed"></div>
+              <button type="submit" class="w-full bg-green-600 text-white py-4 rounded-xl font-black hover:bg-green-500 transition-all">Save Changes</button>
+            </form>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Deposit Modal -->
+  <div id="deposit-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl">
+      <div class="flex items-center justify-between mb-5"><h3 class="font-black text-gray-800 text-lg">Deposit Funds</h3><button onclick="closeModals()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button></div>
+      <div class="mb-4 p-3 bg-green-50 rounded-xl text-xs text-green-700 flex items-center gap-2"><i class="fa-solid fa-info-circle text-green-500"></i> Depositing earns your Verified Badge for free inspections</div>
+      <div class="space-y-3 mb-5">
+        <label class="block text-sm font-bold text-gray-700">Amount (₦)</label>
+        <input type="number" id="deposit-amount" placeholder="Min ₦1,000" min="1000" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-green-500 font-medium">
+        <div class="flex gap-2 flex-wrap">
+          <button onclick="document.getElementById('deposit-amount').value=50000" class="text-xs bg-green-50 text-green-700 px-3 py-1.5 rounded-full font-medium border border-green-200 hover:bg-green-100">₦50k</button>
+          <button onclick="document.getElementById('deposit-amount').value=100000" class="text-xs bg-green-50 text-green-700 px-3 py-1.5 rounded-full font-medium border border-green-200 hover:bg-green-100">₦100k</button>
+          <button onclick="document.getElementById('deposit-amount').value=500000" class="text-xs bg-green-50 text-green-700 px-3 py-1.5 rounded-full font-medium border border-green-200 hover:bg-green-100">₦500k</button>
+          <button onclick="document.getElementById('deposit-amount').value=1000000" class="text-xs bg-green-50 text-green-700 px-3 py-1.5 rounded-full font-medium border border-green-200 hover:bg-green-100">₦1M</button>
+        </div>
+      </div>
+      <button onclick="submitDeposit()" class="w-full bg-green-600 text-white py-3.5 rounded-xl font-black hover:bg-green-500 transition-all">Deposit Now</button>
+    </div>
+  </div>
+
+  <!-- Withdraw Modal -->
+  <div id="withdraw-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl">
+      <div class="flex items-center justify-between mb-5"><h3 class="font-black text-gray-800 text-lg">Withdraw Funds</h3><button onclick="closeModals()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button></div>
+      <div class="mb-4 p-3 bg-amber-50 rounded-xl text-xs text-amber-700 flex items-start gap-2"><i class="fa-solid fa-triangle-exclamation text-amber-500 mt-0.5"></i><span>2% withdrawal fee applies. Your Verified Badge will be reset after withdrawal.</span></div>
+      <div class="space-y-3 mb-5">
+        <div><label class="block text-sm font-bold text-gray-700 mb-1">Amount (₦)</label><input type="number" id="withdraw-amount" placeholder="Amount to withdraw" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-green-500 font-medium"></div>
+        <div><label class="block text-sm font-bold text-gray-700 mb-1">Bank Account Number</label><input type="text" id="withdraw-account" placeholder="0000000000" maxlength="10" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-green-500 font-medium"></div>
+        <div><label class="block text-sm font-bold text-gray-700 mb-1">Bank Name</label><input type="text" id="withdraw-bank" placeholder="e.g. GTBank, Access, Zenith..." class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-green-500 font-medium"></div>
+      </div>
+      <button onclick="submitWithdraw()" class="w-full bg-red-500 text-white py-3.5 rounded-xl font-black hover:bg-red-400 transition-all">Confirm Withdrawal</button>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script>
+    requireAuth('tenant');
+    const user = getUser();
+    document.getElementById('user-name-display').textContent = user.name.split(' ')[0];
+    let profileData = {};
+
+    const tabs = ['overview','wallet','inspections','payments','kyc','profile'];
+    const tabTitles = {overview:'Overview',wallet:'My Wallet',inspections:'Inspections',payments:'Payment History',kyc:'KYC Verification',profile:'My Profile'};
+
+    function showTab(name) {
+      tabs.forEach(t => { document.getElementById(`tab-${t}`).classList.add('hidden'); document.querySelectorAll('.nav-btn').forEach((b,i)=>b.classList.remove('bg-green-800','text-white')); });
+      document.getElementById(`tab-${name}`).classList.remove('hidden');
+      document.getElementById('page-title').textContent = tabTitles[name];
+      if(name==='wallet') loadWallet();
+      if(name==='inspections') loadInspections();
+      if(name==='payments') loadPayments();
+      if(name==='kyc') loadKyc();
+      if(name==='profile') loadProfile();
+    }
+
+    async function loadOverview() {
+      try {
+        const wallet = await api.get('/wallet');
+        document.getElementById('stat-balance').textContent = fmtCurrency(wallet.balance);
+        document.getElementById('stat-badge').textContent = wallet.is_verified ? 'Active ✓' : 'No Badge';
+        if (wallet.is_verified) document.getElementById('badge-display').classList.remove('hidden');
+      } catch {}
+      try {
+        const insp = await api.get('/inspections/my');
+        document.getElementById('stat-inspections').textContent = insp.length;
+      } catch {}
+      document.getElementById('stat-payments').textContent = '0';
+    }
+
+    async function loadWallet() {
+      try {
+        const data = await api.get('/wallet');
+        document.getElementById('wallet-balance').textContent = fmtCurrency(data.balance);
+        document.getElementById('badge-status-card').innerHTML = data.is_verified
+          ? `<div class="w-14 h-14 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-3"><i class="fa-solid fa-shield-check text-green-600 text-2xl"></i></div><p class="font-black text-green-700 text-lg">Badge Active!</p><p class="text-sm text-gray-500 mt-1">Deposit: ${fmtCurrency(data.deposit_amount)}</p><p class="text-xs text-green-600 mt-1">Free inspections on properties ≤ ${fmtCurrency(data.deposit_amount)}</p>`
+          : `<div class="w-14 h-14 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-3"><i class="fa-solid fa-shield text-gray-400 text-2xl"></i></div><p class="font-bold text-gray-600">No Badge Yet</p><p class="text-sm text-gray-400 mt-1">Deposit funds to earn your badge</p>`;
+        const txns = await api.get('/wallet/transactions');
+        const list = document.getElementById('transactions-list');
+        if (!txns.length) { list.innerHTML = `<div class="py-8 text-center"><i class="fa-solid fa-receipt text-gray-300 text-3xl mb-2"></i><p class="text-gray-400 text-sm">No transactions yet</p></div>`; return; }
+        list.className = 'space-y-2';
+        list.innerHTML = txns.map(t => {
+          const isCredit = ['deposit','refund','agent_commission'].includes(t.type);
+          return `<div class="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 border border-gray-100">
+            <div class="flex items-center gap-3"><div class="w-9 h-9 rounded-xl flex items-center justify-center ${isCredit?'bg-green-100':'bg-red-50'}"><i class="fa-solid fa-${isCredit?'arrow-down text-green-600':'arrow-up text-red-500'} text-sm"></i></div>
+            <div><p class="text-sm font-bold text-gray-700 capitalize">${t.type.replace(/_/g,' ')}</p><p class="text-xs text-gray-400">${new Date(t.created_at).toLocaleDateString()}</p></div></div>
+            <span class="font-black ${isCredit?'text-green-600':'text-red-500'}">${isCredit?'+':'-'}${fmtCurrency(Math.abs(t.amount))}</span>
+          </div>`;
+        }).join('');
+      } catch (err) { showToast(err.message, 'error'); }
+    }
+
+    async function loadInspections() {
+      try {
+        const data = await api.get('/inspections/my');
+        const list = document.getElementById('inspections-list');
+        if (!data.length) { list.innerHTML = `<div class="py-12 text-center"><i class="fa-solid fa-magnifying-glass-location text-gray-300 text-3xl mb-3"></i><p class="font-bold text-gray-600">No inspections yet</p><p class="text-sm text-gray-400 mt-1">Browse properties to request inspections</p><a href="/pages/properties.html" class="mt-4 inline-block bg-green-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold">Find Properties</a></div>`; return; }
+        list.className = 'space-y-3';
+        list.innerHTML = data.map(i => {
+          const statusColors = {pending:'bg-amber-100 text-amber-700',approved:'bg-green-100 text-green-700',rejected:'bg-red-100 text-red-700',completed:'bg-blue-100 text-blue-700'};
+          return `<div class="flex items-center justify-between p-4 border border-gray-100 rounded-xl hover:bg-gray-50">
+            <div><p class="font-bold text-gray-800 text-sm">${i.property_title}</p><p class="text-xs text-gray-400 mt-0.5"><i class="fa-solid fa-location-dot text-green-500"></i> ${i.property_city||'N/A'} &nbsp;•&nbsp; ${new Date(i.created_at).toLocaleDateString()}</p></div>
+            <span class="text-xs px-3 py-1.5 rounded-full font-bold capitalize ${statusColors[i.status]||'bg-gray-100 text-gray-600'}">${i.status}</span>
+          </div>`;
+        }).join('');
+      } catch (err) { showToast(err.message, 'error'); }
+    }
+
+    async function loadPayments() {
+      document.getElementById('payments-list').innerHTML = `<div class="py-12 text-center"><i class="fa-solid fa-credit-card text-gray-300 text-3xl mb-3"></i><p class="font-bold text-gray-600">No rent payments yet</p></div>`;
+    }
+
+    async function loadKyc() {
+      try {
+        const data = await api.get('/kyc/status');
+        const statusMap = {pending:'<div class="flex items-center gap-2 bg-amber-50 border border-amber-200 text-amber-700 px-4 py-3 rounded-xl text-sm"><i class="fa-solid fa-clock"></i> KYC document under review</div>',approved:'<div class="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl text-sm"><i class="fa-solid fa-check-circle"></i> KYC Approved! You\'re fully verified.</div>',rejected:'<div class="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm"><i class="fa-solid fa-times-circle"></i> KYC Rejected. Please resubmit with a clearer document.</div>'};
+        if (data.status && statusMap[data.status]) document.getElementById('kyc-status-display').innerHTML = statusMap[data.status];
+      } catch {}
+    }
+
+    async function loadProfile() {
+      try {
+        const data = await api.get('/auth/profile');
+        profileData = data;
+        document.getElementById('p-name').value = data.name;
+        document.getElementById('p-phone').value = data.phone || '';
+        document.getElementById('p-email').value = data.email;
+      } catch {}
+    }
+
+    function openDeposit() { document.getElementById('deposit-modal').classList.remove('hidden'); }
+    function openWithdraw() { document.getElementById('withdraw-modal').classList.remove('hidden'); }
+    function closeModals() { document.getElementById('deposit-modal').classList.add('hidden'); document.getElementById('withdraw-modal').classList.add('hidden'); }
+
+    async function submitDeposit() {
+      const amount = parseFloat(document.getElementById('deposit-amount').value);
+      if (!amount || amount < 1000) return showToast('Minimum deposit is ₦1,000', 'error');
+      try { const d = await api.post('/wallet/deposit', {amount}); showToast(d.message,'success'); closeModals(); loadWallet(); loadOverview(); } catch (err) { showToast(err.message,'error'); }
+    }
+
+    async function submitWithdraw() {
+      const amount = parseFloat(document.getElementById('withdraw-amount').value);
+      const account = document.getElementById('withdraw-account').value;
+      const bank = document.getElementById('withdraw-bank').value;
+      if (!amount || !account || !bank) return showToast('All fields are required', 'error');
+      try { const d = await api.post('/wallet/withdraw', {amount,account_number:account,bank_name:bank}); showToast(d.message,'success'); closeModals(); loadWallet(); } catch (err) { showToast(err.message,'error'); }
+    }
+
+    document.getElementById('profile-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try { await api.put('/auth/profile', {name:document.getElementById('p-name').value, phone:document.getElementById('p-phone').value}); showToast('Profile updated!','success'); } catch (err) { showToast(err.message,'error'); }
+    });
+
+    document.getElementById('kyc-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        const d = await api.post('/kyc/submit', {document_type:document.getElementById('kyc-type').value, document_number:document.getElementById('kyc-number').value});
+        showToast(d.message,'success'); loadKyc();
+      } catch (err) { showToast(err.message,'error'); }
+    });
+
+    function showToast(msg,type='success'){const t=document.createElement('div');t.className=`fixed top-4 right-4 z-[100] px-6 py-3 rounded-xl text-white font-medium shadow-2xl ${type==='success'?'bg-green-600':'bg-red-600'} flex items-center gap-2`;t.innerHTML=`<i class="fa-solid fa-${type==='success'?'check':'exclamation'}-circle"></i>${msg}`;document.body.appendChild(t);setTimeout(()=>t.remove(),4000);}
+
+    showTab('overview');
+    loadOverview();
+  </script>
+</body>
+</html>

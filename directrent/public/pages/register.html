@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Account — DirectRent</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    .role-card { transition: all 0.2s; cursor: pointer; }
+    .role-card.selected { background: #f0fdf4; border-color: #16a34a; }
+    .role-card:hover:not(.selected) { border-color: #bbf7d0; background: #f9fffe; }
+  </style>
+</head>
+<body class="min-h-screen bg-gray-50 py-8 px-4">
+  <div class="max-w-2xl mx-auto">
+    <!-- Header -->
+    <div class="text-center mb-8">
+      <a href="/" class="inline-flex items-center gap-3 mb-6">
+        <div class="w-10 h-10 bg-green-600 rounded-xl flex items-center justify-center"><i class="fa-solid fa-house text-white"></i></div>
+        <span class="text-gray-800 font-black text-xl">Direct<span class="text-green-600">Rent</span></span>
+      </a>
+      <h1 class="text-3xl font-black text-gray-900 mb-2">Create your free account</h1>
+      <p class="text-gray-500">Join Nigeria's most trusted property rental platform</p>
+    </div>
+
+    <div class="bg-white rounded-3xl shadow-lg p-8">
+      <!-- Step 1: Role -->
+      <div class="mb-8">
+        <h3 class="font-black text-gray-800 text-lg mb-2">I want to join as a...</h3>
+        <p class="text-gray-500 text-sm mb-5">Select your role to get the right experience</p>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div class="role-card border-2 border-gray-200 rounded-2xl p-4 text-center" onclick="selectRole('tenant')" data-role="tenant">
+            <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-2">
+              <i class="fa-solid fa-person text-green-600 text-xl"></i>
+            </div>
+            <div class="font-bold text-sm text-gray-800">Tenant</div>
+            <div class="text-xs text-gray-500 mt-1">Find & rent homes</div>
+          </div>
+          <div class="role-card border-2 border-gray-200 rounded-2xl p-4 text-center" onclick="selectRole('landlord')" data-role="landlord">
+            <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-2">
+              <i class="fa-solid fa-building text-blue-600 text-xl"></i>
+            </div>
+            <div class="font-bold text-sm text-gray-800">Landlord</div>
+            <div class="text-xs text-gray-500 mt-1">List & earn</div>
+          </div>
+          <div class="role-card border-2 border-gray-200 rounded-2xl p-4 text-center" onclick="selectRole('agent')" data-role="agent">
+            <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center mx-auto mb-2">
+              <i class="fa-solid fa-user-tie text-orange-600 text-xl"></i>
+            </div>
+            <div class="font-bold text-sm text-gray-800">Agent</div>
+            <div class="text-xs text-gray-500 mt-1">Refer & earn</div>
+          </div>
+          <div class="role-card border-2 border-gray-200 rounded-2xl p-4 text-center" onclick="selectRole('lawyer')" data-role="lawyer">
+            <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-2">
+              <i class="fa-solid fa-scale-balanced text-purple-600 text-xl"></i>
+            </div>
+            <div class="font-bold text-sm text-gray-800">Lawyer</div>
+            <div class="text-xs text-gray-500 mt-1">Offer services</div>
+          </div>
+        </div>
+        <input type="hidden" id="selected-role">
+      </div>
+
+      <!-- Step 2: Form -->
+      <form id="register-form" class="space-y-5">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-2">Full Name *</label>
+            <div class="relative">
+              <i class="fa-solid fa-user absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+              <input type="text" id="name" required placeholder="John Doe"
+                class="w-full pl-11 pr-4 py-3.5 border-2 border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:border-green-500 focus:bg-white text-sm font-medium transition-all">
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-2">Phone Number</label>
+            <div class="relative">
+              <i class="fa-solid fa-phone absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+              <input type="tel" id="phone" placeholder="+234 800 000 0000"
+                class="w-full pl-11 pr-4 py-3.5 border-2 border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:border-green-500 focus:bg-white text-sm font-medium transition-all">
+            </div>
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-2">Email Address *</label>
+          <div class="relative">
+            <i class="fa-solid fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            <input type="email" id="email" required placeholder="your@email.com"
+              class="w-full pl-11 pr-4 py-3.5 border-2 border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:border-green-500 focus:bg-white text-sm font-medium transition-all">
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-2">Password *</label>
+          <div class="relative">
+            <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            <input type="password" id="password" required placeholder="Min. 8 characters" minlength="8"
+              class="w-full pl-11 pr-4 py-3.5 border-2 border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:border-green-500 focus:bg-white text-sm font-medium transition-all">
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-2">Referral Code <span class="text-gray-400 font-normal">(optional)</span></label>
+          <div class="relative">
+            <i class="fa-solid fa-gift absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            <input type="text" id="referral-code" placeholder="Enter referral code for bonus"
+              class="w-full pl-11 pr-4 py-3.5 border-2 border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:border-green-500 focus:bg-white text-sm font-medium transition-all">
+          </div>
+        </div>
+
+        <div id="error-msg" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm flex items-center gap-2">
+          <i class="fa-solid fa-circle-exclamation text-red-500"></i>
+          <span id="error-text"></span>
+        </div>
+
+        <button type="submit" id="submit-btn"
+          class="w-full bg-green-600 hover:bg-green-500 text-white py-4 rounded-xl font-black text-base transition-all shadow-lg hover:shadow-green-500/30 flex items-center justify-center gap-2 disabled:opacity-50">
+          <i class="fa-solid fa-user-plus"></i> Create My Free Account
+        </button>
+
+        <p class="text-center text-xs text-gray-400">
+          By creating an account, you agree to our <a href="#" class="text-green-600 hover:underline">Terms of Service</a> and <a href="#" class="text-green-600 hover:underline">Privacy Policy</a>
+        </p>
+      </form>
+
+      <div class="mt-6 text-center">
+        <p class="text-gray-500 text-sm">Already have an account? <a href="/pages/login.html" class="text-green-600 font-bold hover:text-green-700">Sign in →</a></p>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script>
+    if (getUser()) window.location.href = getDashboardLink(getUser().role);
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('ref')) document.getElementById('referral-code').value = params.get('ref');
+    if (params.get('role')) selectRole(params.get('role'));
+
+    function selectRole(role) {
+      document.getElementById('selected-role').value = role;
+      document.querySelectorAll('.role-card').forEach(c => {
+        c.classList.toggle('selected', c.dataset.role === role);
+      });
+    }
+
+    document.getElementById('register-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const role = document.getElementById('selected-role').value;
+      if (!role) {
+        document.getElementById('error-text').textContent = 'Please select your role above';
+        document.getElementById('error-msg').classList.remove('hidden');
+        return;
+      }
+      const btn = document.getElementById('submit-btn');
+      const errEl = document.getElementById('error-msg');
+      errEl.classList.add('hidden');
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Creating account...';
+      btn.disabled = true;
+      try {
+        const data = await api.post('/auth/register', {
+          name: document.getElementById('name').value,
+          email: document.getElementById('email').value,
+          phone: document.getElementById('phone').value || undefined,
+          password: document.getElementById('password').value,
+          role,
+          referral_code: document.getElementById('referral-code').value || undefined
+        });
+        setAuth(data.token, data.user);
+        window.location.href = getDashboardLink(data.user.role);
+      } catch (err) {
+        document.getElementById('error-text').textContent = err.message;
+        errEl.classList.remove('hidden');
+        btn.innerHTML = '<i class="fa-solid fa-user-plus"></i> Create My Free Account';
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

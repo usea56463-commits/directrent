@@ -1,0 +1,178 @@
+You are a senior full-stack engineer and AI assistant.
+
+Your task: **build the full DirectRent website on Replit** by extending the existing platform without breaking current functionality. Ensure all flows integrate safely with pre-existing dashboards, APIs, and database.
+
+---
+
+## **Tech Stack**
+- Backend: Node.js + Express.js
+- Frontend: HTML + TailwindCSS + Vanilla JS
+- Database: PostgreSQL
+- File Storage: Cloudinary (for property documents and images)
+- Email: SendGrid or Mailgun
+- SMS: Twilio or Africa-focused alternative
+- Maps: Google Maps / Mapbox
+- Analytics: Google Analytics / Plausible
+- Authentication: JWT + email verification
+- All keys & configuration stored **in Master Admin dashboard** (cloud keys, API keys, notifications)
+
+---
+
+## **Database Structure**
+Additive changes only:
+
+**Users Table**
+- wallet_balance, verified_badge, verified_limit, referral_count, deposit_amount, kyc_status, role (tenant/landlord/agent/lawyer/admin), status (active/suspended)
+
+**Properties Table**
+- status (pending/verified/flagged/removed), ad_placement (boolean), type (long-term/shortlet)
+
+**InspectionCredits Table**
+- tenant_id, property_id, fee_status (used/pending), created_at
+
+**Agents Table**
+- user_id, total_referrals, lifetime_commissions, upgraded_status
+
+**Lawyers Table**
+- user_id, verification_status, fee_percentage, location (for proximity)
+
+**Transactions Table**
+- type: deposit, withdrawal, rent_payment, inspection_fee, onboarding_fee, agent_commission, lawyer_fee
+
+**AdminActions Table**
+- action_type, performed_by_admin_id, target_user_id/property_id, timestamp
+
+**Blogs Table**
+- title, content, category, status (published/draft), created_at
+
+**SupportTickets Table**
+- user_id, category, description, status (open/resolved), assigned_admin_id, created_at
+
+---
+
+## **Tenant Features**
+1. Wallet / Savings  
+   - Deposit money → wallet_balance updated  
+   - Verified badge proportional to deposit → badge visible for apartments ≤ deposit  
+   - Badge removed on withdrawal or rent/inspection payment  
+   - Can inspect apartments ≤ verified deposit limit for free  
+
+2. Multi-apartment Inspections  
+   - Inspections above deposit limit → pay inspection fee (5k)  
+   - Fee auto-split: 2k landlord, 2k platform, 1k agent if referred  
+
+3. Rent / Shortlet Payments  
+   - Rent paid via platform → landlord receives full rent  
+   - Platform takes 5% commission  
+   - Agent receives 1% of 5% for first rent if landlord referred  
+
+4. Badge & Deposit Logic  
+   - Deposit increases badge coverage (higher-budget apartments)  
+   - Withdrawal triggers 2% fee, badge removed  
+   - Deposit used to pay rent → badge removed  
+
+5. KYC Integration  
+   - Required for tenants depositing above threshold (e.g., ₦500k)  
+   - Upload ID, proof of address, optional selfie  
+   - Admin approves/rejects  
+
+---
+
+## **Landlord Features**
+- Onboarding fee 5k → 2k agent (if referred), 3k platform  
+- Admin verification required  
+- List properties: long-term or shortlet  
+- Pay for homepage ads  
+- Receive rent minus platform 5% commission  
+- Tenant info available during inspection  
+- KYC mandatory  
+
+---
+
+## **Agent / Referral Features**
+- Refer landlords, tenants, lawyers  
+- Commission rules:  
+  - Landlord onboarding → 2k agent  
+  - Lawyer first transaction → 1% agent  
+  - Tenant first rent → 1% of 5% agent (lifetime per landlord)  
+- Dashboard: earnings, referral count, lifetime commission  
+- Upgrade to full agent after referral threshold  
+
+---
+
+## **Lawyer Features**
+- Registration → admin approval  
+- Set service fee % (default 5%)  
+- Platform takes 5% of lawyer fee  
+- 1% of first transaction goes to referring agent  
+- Accessible based on **proximity**  
+
+---
+
+## **Admin Features**
+- Approve/reject landlords, properties, users  
+- Suspend/activate accounts  
+- Resolve reports / disputes  
+- View wallets, transactions, badges, KYC status  
+- Configure keys: cloud storage, email, SMS, maps  
+- Logs all actions  
+
+---
+
+## **Blog & Support System**
+- Blog: admin-controlled posts (categories, publish/draft, search, comment moderation)  
+- Support tickets: submit, assign, track, resolve  
+- Navigation links visible to all users  
+
+---
+
+## **Security & Anti-Fraud**
+- All payments via platform escrow  
+- Offline payments blocked  
+- Auto-splits for inspections, agent, lawyer, platform, landlord  
+- Verified badge only active if wallet funds exist and KYC approved  
+
+---
+
+## **Frontend Pages**
+- Tenant Dashboard: wallet, badge, inspections, payments  
+- Landlord Dashboard: property listings, payments, ad slots  
+- Agent Dashboard: referrals, earnings, upgrade status  
+- Lawyer Dashboard: verification, fees, cases  
+- Admin Dashboard: all tables, logs, wallets, KYC, reports, support  
+- Blog page: read/search posts  
+- Support page: submit tickets, view status  
+- Mobile-friendly, responsive, intuitive UI  
+
+---
+
+## **Step-by-Step Build**
+1. Add/update backend APIs for all new features (wallet, badge, inspections, KYC, agent/lawyer commissions, blogs, support tickets)  
+2. Add/update frontend dashboards without breaking existing UI  
+3. Merge database changes incrementally  
+4. Implement JWT auth & role-based access control  
+5. Test all flows: savings, badge, multi-inspection, withdrawal, rent, shortlet, agent/lawyer commissions, KYC, blogs, support  
+6. Deploy to Replit; all keys stored in **Master Admin dashboard**  
+
+---
+
+## **Expected Output**
+- Fully additive DirectRent website with:  
+  - Tenant savings, verified badge, inspection logic  
+  - Landlord onboarding, property listings, rent & ad payments  
+  - Agent & lawyer referral system & commissions  
+  - KYC verification  
+  - Admin dashboard with full control & logs  
+  - Blog & support ticket system  
+  - Mobile-friendly, secure, scalable UI  
+- Pre-built code remains intact; new features integrate safely
+
+---
+
+This is **ready to give to Replit AI**, and it covers **everything discussed so far**.  
+
+---
+
+If you want, I can also **draw a visual system flow diagram** showing **tenants, landlords, agents, lawyers, wallets, inspections, payments, commissions, KYC, badges, admin control, blog, and support**, which is perfect for pitching or documentation.  
+
+Do you want me to do that next?
