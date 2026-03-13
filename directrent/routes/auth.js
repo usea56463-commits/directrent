@@ -29,12 +29,12 @@ async function sendEmail(to, subject, html) {
 
   let transporter;
   if (cfg.api_key) {
-    transporter = nodemailer.createTransporter({
+    transporter = nodemailer.createTransport({
       service: 'SendGrid',
       auth: { user: 'apikey', pass: cfg.api_key }
     });
   } else if (cfg.host) {
-    transporter = nodemailer.createTransporter({
+    transporter = nodemailer.createTransport({
       host: cfg.host,
       auth: { user: cfg.user, pass: cfg.pass }
     });

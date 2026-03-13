@@ -7,7 +7,6 @@ const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
 // Configure Cloudinary
-const settings = require('./settings');
 async function getCloudinaryConfig() {
   const config = await db.query('SELECT value FROM platform_settings WHERE key IN ($1, $2, $3)', ['cloudinary_cloud_name', 'cloudinary_api_key', 'cloudinary_api_secret']);
   const cfg = {};
