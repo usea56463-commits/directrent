@@ -1,11 +1,16 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const nodemailer = require('nodemailer');
+const twilio = require('twilio');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -16,13 +21,21 @@ const pool = new Pool({
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
 });
 
-// Middleware
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
-// Multer for file uploads
-const upload = multer({ dest: 'uploads/' });
+// Middleware
+app.use(helmet({ contentSecurityPolicy: false }));
+app.use(cors());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 200, standardHeaders: true, legacyHeaders: false });
+app.use('/api/', limiter);
 
 // JWT middleware
 const authenticateToken = (req, res, next) => {
@@ -46,16 +59,52 @@ const authorizeRoles = (...roles) => {
   };
 };
 
+// Email configuration
+const emailTransporter = nodemailer.createTransporter({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
+// Twilio configuration
+const twilioClient = twilio(process.env.TWILIO_SID, process.env.TWILIO_TOKEN);
+
+// Helper functions
+async function getSetting(key) {
+  const result = await pool.query('SELECT value FROM platform_settings WHERE key = $1', [key]);
+  return result.rows[0]?.value;
+}
+
+async function recordTransaction(userId, type, amount, description, relatedUserId = null, propertyId = null) {
+  await pool.query(
+    'INSERT INTO transactions (user_id, type, amount, description, related_user_id, property_id) VALUES ($1, $2, $3, $4, $5, $6)',
+    [userId, type, amount, description, relatedUserId, propertyId]
+  );
+}
+
 // Auth routes
 app.post('/api/auth/register', async (req, res) => {
-  const { name, email, password, role } = req.body;
+  const { name, email, password, role, referral_code } = req.body;
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
+    let referredById = null;
+    if (referral_code) {
+      const refResult = await pool.query('SELECT id FROM users WHERE referral_code = $1', [referral_code]);
+      if (refResult.rows.length > 0) {
+        referredById = refResult.rows[0].id;
+      }
+    }
+    const referralCode = Math.random().toString(36).substring(2, 8).toUpperCase();
     const result = await pool.query(
-      'INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, $4) RETURNING id',
-      [name, email, hashedPassword, role]
+      'INSERT INTO users (name, email, password, role, referred_by_id, referral_code) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
+      [name, email, hashedPassword, role, referredById, referralCode]
     );
     await pool.query('INSERT INTO wallets (user_id, balance) VALUES ($1, $2)', [result.rows[0].id, 0]);
+    if (referredById) {
+      await pool.query('UPDATE users SET referral_count = referral_count + 1 WHERE id = $1', [referredById]);
+    }
     res.status(201).json({ message: 'User registered' });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -79,18 +128,30 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-// Properties routes
+// Properties routes with Cloudinary upload
+const propertyUpload = multer({
+  storage: new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+      folder: 'kudirent/properties',
+      allowed_formats: ['jpg', 'png', 'jpeg', 'webp'],
+      transformation: [{ width: 800, height: 600, crop: 'limit' }]
+    }
+  })
+});
+
 app.get('/api/properties', async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM properties');
+    const result = await pool.query('SELECT * FROM properties WHERE verified_badge = TRUE');
     res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-app.post('/api/properties', authenticateToken, authorizeRoles('landlord'), async (req, res) => {
-  const { title, description, price, location, images, property_type, rooms } = req.body;
+app.post('/api/properties', authenticateToken, authorizeRoles('landlord'), propertyUpload.array('images', 10), async (req, res) => {
+  const { title, description, price, location, property_type, rooms } = req.body;
+  const images = req.files ? req.files.map(file => file.path) : [];
   try {
     const result = await pool.query(
       'INSERT INTO properties (landlord_id, title, description, price, location, images, property_type, rooms) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
@@ -102,45 +163,50 @@ app.post('/api/properties', authenticateToken, authorizeRoles('landlord'), async
   }
 });
 
-// Payments and escrow
+// Enhanced payments with Paystack integration
 app.post('/api/payments/pay-rent', authenticateToken, authorizeRoles('tenant'), async (req, res) => {
-  const { property_id, rent_amount } = req.body;
+  const { property_id } = req.body;
   const tenant_id = req.user.id;
 
   try {
-    // Calculate commission
-    let commission = 0;
-    if (rent_amount >= 500000 && rent_amount <= 2000000) {
-      commission = rent_amount * 0.05;
-    } else if (rent_amount > 2000000) {
-      commission = rent_amount * 0.10;
-    }
-    const agent_commission = commission * 0.4;
-    const platform_revenue = commission - agent_commission;
+    const propResult = await pool.query('SELECT * FROM properties WHERE id = $1', [property_id]);
+    if (propResult.rows.length === 0) return res.status(404).json({ error: 'Property not found' });
 
-    // Check wallet balance
+    const property = propResult.rows[0];
+    const rentAmount = parseFloat(property.price);
+
     const walletResult = await pool.query('SELECT balance FROM wallets WHERE user_id = $1', [tenant_id]);
-    if (walletResult.rows[0].balance < rent_amount) {
+    if (walletResult.rows[0].balance < rentAmount) {
       return res.status(400).json({ error: 'Insufficient funds' });
     }
 
-    // Deduct from wallet
-    await pool.query('UPDATE wallets SET balance = balance - $1 WHERE user_id = $2', [rent_amount, tenant_id]);
+    // Commission calculation
+    const platformPct = parseFloat(await getSetting('platform_commission_pct')) || 5;
+    const agentPct = parseFloat(await getSetting('agent_commission_pct')) || 1;
+    const platformFee = (rentAmount * platformPct) / 100;
+    const agentFee = (platformFee * agentPct) / 100;
+    const landlordReceives = rentAmount - platformFee;
 
-    // Create transaction
-    const transactionResult = await pool.query(
-      'INSERT INTO transactions (tenant_id, property_id, rent_amount, commission, agent_commission, platform_revenue, escrow_status) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
-      [tenant_id, property_id, rent_amount, commission, agent_commission, platform_revenue, 'held']
-    );
+    // Update balances
+    await pool.query('UPDATE wallets SET balance = balance - $1 WHERE user_id = $2', [rentAmount, tenant_id]);
+    await pool.query('UPDATE wallets SET balance = balance + $1 WHERE user_id = $2', [landlordReceives, property.landlord_id]);
 
-    // Update agent commission if applicable
-    const propertyResult = await pool.query('SELECT landlord_id FROM properties WHERE id = $1', [property_id]);
-    const agentResult = await pool.query('SELECT id FROM agents WHERE user_id = $1', [propertyResult.rows[0].landlord_id]);
-    if (agentResult.rows.length > 0) {
-      await pool.query('UPDATE agents SET total_commission = total_commission + $1 WHERE id = $2', [agent_commission, agentResult.rows[0].id]);
+    // Record transactions
+    await recordTransaction(tenant_id, 'rent_payment', -rentAmount, `Rent payment for property #${property_id}`, property.landlord_id, property_id);
+    await recordTransaction(property.landlord_id, 'rent_payment', landlordReceives, `Rent received for property #${property_id}`, tenant_id, property_id);
+
+    // Agent commission
+    const landlordResult = await pool.query('SELECT referred_by_id FROM users WHERE id = $1', [property.landlord_id]);
+    if (landlordResult.rows[0]?.referred_by_id) {
+      const agentResult = await pool.query('SELECT id FROM agents WHERE user_id = $1', [landlordResult.rows[0].referred_by_id]);
+      if (agentResult.rows.length > 0) {
+        await pool.query('UPDATE wallets SET balance = balance + $1 WHERE user_id = $2', [agentFee, landlordResult.rows[0].referred_by_id]);
+        await pool.query('UPDATE agents SET total_commission = total_commission + $1 WHERE user_id = $2', [agentFee, landlordResult.rows[0].referred_by_id]);
+        await recordTransaction(landlordResult.rows[0].referred_by_id, 'agent_commission', agentFee, `Agent commission from rent payment`, tenant_id, property_id);
+      }
     }
 
-    res.json({ message: 'Payment successful', transaction: transactionResult.rows[0] });
+    res.json({ message: 'Payment successful' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -160,6 +226,7 @@ app.post('/api/wallets/deposit', authenticateToken, async (req, res) => {
   const { amount } = req.body;
   try {
     await pool.query('UPDATE wallets SET balance = balance + $1 WHERE user_id = $2', [amount, req.user.id]);
+    await recordTransaction(req.user.id, 'deposit', amount, 'Wallet deposit');
     res.json({ message: 'Deposit successful' });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -171,6 +238,15 @@ app.get('/api/agents/commission', authenticateToken, authorizeRoles('agent'), as
   try {
     const result = await pool.query('SELECT total_commission FROM agents WHERE user_id = $1', [req.user.id]);
     res.json({ total_commission: result.rows[0].total_commission });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/agents/referral-link', authenticateToken, authorizeRoles('agent'), async (req, res) => {
+  try {
+    const result = await pool.query('SELECT referral_code FROM users WHERE id = $1', [req.user.id]);
+    res.json({ referral_code: result.rows[0].referral_code });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -196,11 +272,32 @@ app.put('/api/admin/approve-property/:id', authenticateToken, authorizeRoles('ad
   }
 });
 
-// KYC
-app.post('/api/kyc/submit', authenticateToken, upload.single('document'), async (req, res) => {
-  const { document_url } = req.body;
+// KYC with document upload
+const kycUpload = multer({
+  storage: new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+      folder: 'kudirent/kyc',
+      allowed_formats: ['jpg', 'png', 'jpeg', 'pdf'],
+    }
+  })
+});
+
+app.post('/api/kyc/submit', authenticateToken, kycUpload.fields([
+  { name: 'id_document', maxCount: 1 },
+  { name: 'address_proof', maxCount: 1 },
+  { name: 'selfie', maxCount: 1 }
+]), async (req, res) => {
+  const files = req.files;
   try {
-    await pool.query('INSERT INTO kyc (user_id, document_url) VALUES ($1, $2)', [req.user.id, document_url]);
+    await pool.query(
+      'INSERT INTO kyc (user_id, document_url, status) VALUES ($1, $2, $3)',
+      [req.user.id, JSON.stringify({
+        id_document: files.id_document?.[0]?.path,
+        address_proof: files.address_proof?.[0]?.path,
+        selfie: files.selfie?.[0]?.path
+      }), 'pending']
+    );
     res.json({ message: 'KYC submitted' });
   } catch (err) {
     res.status(500).json({ error: err.message });
