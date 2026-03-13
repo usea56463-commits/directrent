@@ -180,7 +180,8 @@ const initDB = async () => {
       ('twilio_phone', '', 'Twilio phone number'),
       ('google_maps_key', '', 'Google Maps API key'),
       ('site_name', 'DirectRent', 'Platform name'),
-      ('contact_email', 'admin@directrent.ng', 'Platform contact email')
+      ('contact_email', 'admin@directrent.ng', 'Platform contact email'),
+      ('logo_url', '', 'Platform logo URL')
     ON CONFLICT (key) DO NOTHING;
   `;
 
