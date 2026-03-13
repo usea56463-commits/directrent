@@ -21,12 +21,25 @@ const pool = new Pool({
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
 });
 
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+// Configure Cloudinary (will be updated from settings)
+let cloudinaryConfigured = false;
+const configureCloudinary = async () => {
+  const cloudName = await getSetting('cloudinary_cloud_name');
+  const apiKey = await getSetting('cloudinary_api_key');
+  const apiSecret = await getSetting('cloudinary_api_secret');
+
+  if (cloudName && apiKey && apiSecret) {
+    cloudinary.config({
+      cloud_name: cloudName,
+      api_key: apiKey,
+      api_secret: apiSecret,
+    });
+    cloudinaryConfigured = true;
+  }
+};
+
+// Initialize configurations
+configureCloudinary();
 
 // Middleware
 app.use(helmet({ contentSecurityPolicy: false }));
@@ -42,7 +55,8 @@ const authenticateToken = (req, res, next) => {
   const token = req.header('Authorization')?.split(' ')[1];
   if (!token) return res.status(401).json({ error: 'Access denied' });
 
-  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+  const jwtSecret = process.env.JWT_SECRET || 'fallback_secret'; // Use env as fallback
+  jwt.verify(token, jwtSecret, (err, user) => {
     if (err) return res.status(403).json({ error: 'Invalid token' });
     req.user = user;
     next();
@@ -59,17 +73,33 @@ const authorizeRoles = (...roles) => {
   };
 };
 
-// Email configuration
-const emailTransporter = nodemailer.createTransporter({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+// Email configuration (dynamic)
+const getEmailTransporter = async () => {
+  const emailUser = await getSetting('email_user');
+  const emailPass = await getSetting('email_pass');
 
-// Twilio configuration
-const twilioClient = twilio(process.env.TWILIO_SID, process.env.TWILIO_TOKEN);
+  if (emailUser && emailPass) {
+    return nodemailer.createTransporter({
+      service: 'gmail',
+      auth: {
+        user: emailUser,
+        pass: emailPass,
+      },
+    });
+  }
+  return null;
+};
+
+// Twilio configuration (dynamic)
+const getTwilioClient = async () => {
+  const sid = await getSetting('twilio_sid');
+  const token = await getSetting('twilio_token');
+
+  if (sid && token) {
+    return twilio(sid, token);
+  }
+  return null;
+};
 
 // Helper functions
 async function getSetting(key) {
@@ -121,7 +151,7 @@ app.post('/api/auth/login', async (req, res) => {
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) return res.status(400).json({ error: 'Invalid password' });
 
-    const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET);
+    const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET || 'fallback_secret');
     res.json({ token, user: { id: user.id, name: user.name, role: user.role, wallet_balance: user.wallet_balance } });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -130,14 +160,15 @@ app.post('/api/auth/login', async (req, res) => {
 
 // Properties routes with Cloudinary upload
 const propertyUpload = multer({
-  storage: new CloudinaryStorage({
+  storage: cloudinaryConfigured ? new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
       folder: 'kudirent/properties',
       allowed_formats: ['jpg', 'png', 'jpeg', 'webp'],
       transformation: [{ width: 800, height: 600, crop: 'limit' }]
     }
-  })
+  }) : multer.memoryStorage(), // Fallback to memory storage
+  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
 });
 
 app.get('/api/properties', async (req, res) => {
@@ -266,7 +297,72 @@ app.put('/api/admin/approve-property/:id', authenticateToken, authorizeRoles('ad
   const { id } = req.params;
   try {
     await pool.query('UPDATE properties SET verified_badge = TRUE WHERE id = $1', [id]);
+
+    // Log admin action
+    await pool.query('INSERT INTO admin_actions (action_type, performed_by_admin_id, target_property_id, notes) VALUES ($1, $2, $3, $4)',
+      ['approve_property', req.user.id, id, `Approved property ID: ${id}`]);
+
     res.json({ message: 'Property approved' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin settings management
+app.get('/api/admin/settings', authenticateToken, authorizeRoles('admin', 'super_admin'), async (req, res) => {
+  try {
+    const result = await pool.query('SELECT key, value, description FROM platform_settings ORDER BY key');
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/admin/settings/:key', authenticateToken, authorizeRoles('admin', 'super_admin'), async (req, res) => {
+  const { key } = req.params;
+  const { value } = req.body;
+  try {
+    await pool.query('UPDATE platform_settings SET value = $1 WHERE key = $2', [value, key]);
+
+    // Log admin action
+    await pool.query('INSERT INTO admin_actions (action_type, performed_by_admin_id, notes) VALUES ($1, $2, $3)',
+      ['update_setting', req.user.id, `Updated setting: ${key}`]);
+
+    // Refresh configurations if API keys changed
+    if (['cloudinary_cloud_name', 'cloudinary_api_key', 'cloudinary_api_secret'].includes(key)) {
+      await configureCloudinary();
+    }
+
+    res.json({ message: 'Setting updated' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/admin/settings', authenticateToken, authorizeRoles('admin', 'super_admin'), async (req, res) => {
+  const { key, value, description } = req.body;
+  try {
+    await pool.query('INSERT INTO platform_settings (key, value, description) VALUES ($1, $2, $3) ON CONFLICT (key) DO UPDATE SET value = $2, description = $3', [key, value, description]);
+    res.json({ message: 'Setting added/updated' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin stats
+app.get('/api/admin/stats', authenticateToken, authorizeRoles('admin', 'super_admin', 'sub_admin'), async (req, res) => {
+  try {
+    const userStats = await pool.query('SELECT role, COUNT(*) as count FROM users GROUP BY role');
+    const propertyStats = await pool.query('SELECT COUNT(*) as total_properties, COUNT(CASE WHEN verified_badge = TRUE THEN 1 END) as verified_properties FROM properties');
+    const transactionStats = await pool.query('SELECT SUM(amount) as total_transactions FROM transactions WHERE type = \'rent_payment\' AND amount > 0');
+    const walletStats = await pool.query('SELECT SUM(balance) as total_wallet_balance FROM wallets');
+
+    res.json({
+      users: userStats.rows,
+      properties: propertyStats.rows[0],
+      transactions: transactionStats.rows[0],
+      wallets: walletStats.rows[0]
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -274,13 +370,14 @@ app.put('/api/admin/approve-property/:id', authenticateToken, authorizeRoles('ad
 
 // KYC with document upload
 const kycUpload = multer({
-  storage: new CloudinaryStorage({
+  storage: cloudinaryConfigured ? new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
       folder: 'kudirent/kyc',
       allowed_formats: ['jpg', 'png', 'jpeg', 'pdf'],
     }
-  })
+  }) : multer.memoryStorage(), // Fallback to memory storage
+  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
 });
 
 app.post('/api/kyc/submit', authenticateToken, kycUpload.fields([

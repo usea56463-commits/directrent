@@ -128,7 +128,17 @@ INSERT INTO platform_settings (key, value, description) VALUES
 ('platform_commission_pct', '5', 'Platform commission percentage for rents 500k-2M'),
 ('platform_commission_10_pct', '10', 'Platform commission percentage for rents above 2M'),
 ('agent_commission_pct', '40', 'Agent commission percentage from platform fee'),
-('site_url', 'https://kudirent.onrender.com', 'Site URL for referral links')
+('site_url', 'https://kudirent.onrender.com', 'Site URL for referral links'),
+('cloudinary_cloud_name', '', 'Cloudinary cloud name for image uploads'),
+('cloudinary_api_key', '', 'Cloudinary API key'),
+('cloudinary_api_secret', '', 'Cloudinary API secret'),
+('twilio_sid', '', 'Twilio SID for SMS'),
+('twilio_token', '', 'Twilio auth token'),
+('email_user', '', 'Email service username'),
+('email_pass', '', 'Email service password'),
+('paystack_secret_key', '', 'Paystack secret key'),
+('paystack_public_key', '', 'Paystack public key'),
+('jwt_secret', '', 'JWT secret for authentication')
 ON CONFLICT (key) DO NOTHING;
 
 -- Seed data
