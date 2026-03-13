@@ -4,9 +4,73 @@ const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
 const db = require('../db');
 const { generateToken, authenticateToken } = require('../middleware/auth');
+const nodemailer = require('nodemailer');
+const twilio = require('twilio');
 
 function generateReferralCode() {
   return Math.random().toString(36).substring(2, 8).toUpperCase();
+}
+
+async function getEmailConfig() {
+  const config = await db.query('SELECT value FROM platform_settings WHERE key IN ($1, $2, $3, $4)', ['sendgrid_api_key', 'smtp_host', 'smtp_user', 'smtp_pass']);
+  const cfg = {};
+  config.rows.forEach(r => {
+    if (r.key === 'sendgrid_api_key') cfg.api_key = r.value;
+    if (r.key === 'smtp_host') cfg.host = r.value;
+    if (r.key === 'smtp_user') cfg.user = r.value;
+    if (r.key === 'smtp_pass') cfg.pass = r.value;
+  });
+  return cfg;
+}
+
+async function sendEmail(to, subject, html) {
+  const cfg = await getEmailConfig();
+  if (!cfg.api_key && !cfg.host) return; // No config
+
+  let transporter;
+  if (cfg.api_key) {
+    transporter = nodemailer.createTransporter({
+      service: 'SendGrid',
+      auth: { user: 'apikey', pass: cfg.api_key }
+    });
+  } else if (cfg.host) {
+    transporter = nodemailer.createTransporter({
+      host: cfg.host,
+      auth: { user: cfg.user, pass: cfg.pass }
+    });
+  } else {
+    return;
+  }
+
+  await transporter.sendMail({
+    from: 'admin@directrent.ng',
+    to,
+    subject,
+    html
+  });
+}
+
+async function getTwilioConfig() {
+  const config = await db.query('SELECT value FROM platform_settings WHERE key IN ($1, $2, $3)', ['twilio_sid', 'twilio_token', 'twilio_phone']);
+  const cfg = {};
+  config.rows.forEach(r => {
+    if (r.key === 'twilio_sid') cfg.sid = r.value;
+    if (r.key === 'twilio_token') cfg.token = r.value;
+    if (r.key === 'twilio_phone') cfg.phone = r.value;
+  });
+  return cfg;
+}
+
+async function sendSMS(to, message) {
+  const cfg = await getTwilioConfig();
+  if (!cfg.sid || !cfg.token || !cfg.phone) return;
+
+  const client = twilio(cfg.sid, cfg.token);
+  await client.messages.create({
+    body: message,
+    from: cfg.phone,
+    to
+  });
 }
 
 router.post('/register', async (req, res) => {
@@ -63,6 +127,22 @@ router.post('/register', async (req, res) => {
 
     const token = generateToken(user);
     res.status(201).json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+
+    // Send welcome email
+    try {
+      await sendEmail(email, 'Welcome to DirectRent', `<h1>Welcome ${name}!</h1><p>Your account has been created. Role: ${role}</p>`);
+    } catch (e) {
+      console.error('Email send failed:', e.message);
+    }
+
+    // Send welcome SMS
+    if (phone) {
+      try {
+        await sendSMS(phone, `Welcome to DirectRent, ${name}! Your account is ready.`);
+      } catch (e) {
+        console.error('SMS send failed:', e.message);
+      }
+    }
   } catch (err) {
     console.error('Register error:', err.message);
     res.status(500).json({ error: 'Registration failed' });

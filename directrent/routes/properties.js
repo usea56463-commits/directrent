@@ -2,6 +2,35 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 const { authenticateToken, requireRole } = require('../middleware/auth');
+const multer = require('multer');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+
+// Configure Cloudinary
+const settings = require('./settings');
+async function getCloudinaryConfig() {
+  const config = await db.query('SELECT value FROM platform_settings WHERE key IN ($1, $2, $3)', ['cloudinary_cloud_name', 'cloudinary_api_key', 'cloudinary_api_secret']);
+  const cfg = {};
+  config.rows.forEach(r => {
+    if (r.key === 'cloudinary_cloud_name') cfg.cloud_name = r.value;
+    if (r.key === 'cloudinary_api_key') cfg.api_key = r.value;
+    if (r.key === 'cloudinary_api_secret') cfg.api_secret = r.value;
+  });
+  return cfg;
+}
+
+function createUpload() {
+  return multer({
+    storage: new CloudinaryStorage({
+      cloudinary: cloudinary,
+      params: {
+        folder: 'directrent/properties',
+        allowed_formats: ['jpg', 'png', 'jpeg', 'webp'],
+        transformation: [{ width: 800, height: 600, crop: 'limit' }]
+      }
+    })
+  });
+}
 
 router.get('/', async (req, res) => {
   try {
@@ -47,15 +76,26 @@ router.get('/:id', async (req, res) => {
 
 router.post('/', authenticateToken, requireRole('landlord', 'admin'), async (req, res) => {
   try {
-    const { title, description, address, city, state, price, type, bedrooms, bathrooms, amenities } = req.body;
-    if (!title || !address || !price) return res.status(400).json({ error: 'Title, address and price are required' });
+    // Configure Cloudinary
+    const cfg = await getCloudinaryConfig();
+    if (cfg.cloud_name) cloudinary.config(cfg);
 
-    const r = await db.query(
-      `INSERT INTO properties (landlord_id, title, description, address, city, state, price, type, bedrooms, bathrooms, amenities, status)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'pending') RETURNING *`,
-      [req.user.id, title, description, address, city, state, price, type || 'long-term', bedrooms, bathrooms, amenities]
-    );
-    res.status(201).json(r.rows[0]);
+    const upload = createUpload();
+    upload.array('images', 10)(req, res, async (err) => {
+      if (err) return res.status(500).json({ error: 'Upload failed' });
+
+      const { title, description, address, city, state, price, type, bedrooms, bathrooms, amenities } = req.body;
+      if (!title || !address || !price) return res.status(400).json({ error: 'Title, address and price are required' });
+
+      const images = req.files ? req.files.map(f => f.path) : [];
+
+      const r = await db.query(
+        `INSERT INTO properties (landlord_id, title, description, address, city, state, price, type, bedrooms, bathrooms, amenities, images, status)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,'pending') RETURNING *`,
+        [req.user.id, title, description, address, city, state, price, type || 'long-term', bedrooms, bathrooms, amenities, images]
+      );
+      res.status(201).json(r.rows[0]);
+    });
   } catch (err) {
     console.error('Create property error:', err.message);
     res.status(500).json({ error: 'Failed to create property' });
